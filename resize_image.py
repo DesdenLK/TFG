@@ -1,26 +1,30 @@
-from PIL import Image
 import numpy as np
+from PIL import Image
 
-# Cargar la imagen original
-img = Image.open(r"C:\Users\Luca Acosta Iglesias\Documents\TFG\PathDrawing\TerFreser_919-2910\dem_10m.png")
+def crop_and_save_raw(input_path, output_path, crop_left, crop_top, crop_width, crop_height):
+    # Cargar la imagen en 16 bits
+    image = Image.open(input_path).convert("I;16")  # 'I;16' es el modo de 16 bits
 
-# Obtener el tamaño original de la imagen
-width, height = img.size
+    # Recortar la imagen con las coordenadas proporcionadas
+    cropped_image = image.crop((crop_left, crop_top, crop_left + crop_width, crop_top + crop_height))
 
-# Determinar el tamaño del recorte (aquí estamos recortando a 1024x1024)
-new_size = 1024
+    # Convertir a un array de numpy (16 bits) para asegurarnos de que está en el formato correcto
+    cropped_array = np.array(cropped_image, dtype=np.uint16)
 
-# Calcular la zona a recortar (centrada)
-left = (width - new_size) // 2
-top = (height - new_size) // 2
-right = left + new_size
-bottom = top + new_size
+    # Guardar el heightmap como archivo RAW de 16 bits
+    cropped_array.tofile(output_path)  # Guarda los datos binarios sin encabezado
 
-# Recortar la imagen
-img_cropped = img.crop((left, top, right, bottom))
+    print(f"Heightmap recortado y guardado en {output_path} como archivo RAW de 16 bits")
 
-# Convertir a numpy array para verificar valores si es necesario
-img_array = np.array(img_cropped)
+# Parámetros de entrada
+input_path = r"C:\Users\acost\Documents\TFG\PathDrawing\TerFreser_919-2910\dem_10m.png"  # Ruta de la imagen original
+output_path = r"C:\Users\acost\Documents\TFG\PathDrawing\TerFreser_919-2910\dem_FINAL.raw"  # Ruta para guardar el RAW
 
-# Guardar la imagen recortada
-img_cropped.save(r"C:\Users\Luca Acosta Iglesias\Documents\TFG\PathDrawing\TerFreser_919-2910\dem_FINAL.png")
+# Definir las dimensiones del recorte
+crop_left = 0    # Coordenada X de inicio del recorte
+crop_top = 0     # Coordenada Y de inicio del recorte
+crop_width = 1025  # Ancho del recorte (ajustar según necesidad)
+crop_height = 1025  # Alto del recorte (ajustar según necesidad)
+
+# Recortar y guardar como RAW
+crop_and_save_raw(input_path, output_path, crop_left, crop_top, crop_width, crop_height)

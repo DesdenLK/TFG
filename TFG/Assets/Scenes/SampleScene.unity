@@ -165,7 +165,7 @@ Camera:
   m_ShutterSpeed: 0.005
   m_Aperture: 16
   m_FocusDistance: 10
-  m_FocalLength: 50
+  m_FocalLength: 18.478378
   m_BladeCount: 5
   m_Curvature: {x: 2, y: 11}
   m_BarrelClipping: 0.25
@@ -206,8 +206,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.31390005, y: 0.3606833, z: -0.13035384, w: 0.86855173}
-  m_LocalPosition: {x: -165.1719, y: 518.0471, z: -153.70914}
+  m_LocalRotation: {x: 0.5204238, y: -0.018933864, z: 0.011556402, w: 0.85362}
+  m_LocalPosition: {x: 4338.869, y: 9429.817, z: -21.470276}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -269,8 +269,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06f69f0afd07b3849bfbf7c0aa954ce9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  demImagePath: C:\Users\Luca Acosta Iglesias\Documents\TFG\PathDrawing\TerFreser_919-2910\dem_FINAL.png
-  terrain: {fileID: 1226462782}
+  rawFilePath: C:\Users\acost\Documents\TFG\PathDrawing\TerFreser_919-2910\dem_FINAL.raw
+  rawWidth: 1025
+  rawHeight: 1025
+  terrain: {fileID: 1797588672}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -362,13 +364,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 410087039}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalRotation: {x: 0.74397045, y: 0.57185006, z: -0.18498859, w: 0.29201847}
+  m_LocalPosition: {x: 6143, y: 4646, z: -1418}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+  m_LocalEulerAnglesHint: {x: 40.247, y: 175.587, z: 103.287}
 --- !u!114 &410087042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -441,7 +443,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1226462780
+--- !u!1 &1797588670
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -449,9 +451,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1226462783}
-  - component: {fileID: 1226462782}
-  - component: {fileID: 1226462781}
+  - component: {fileID: 1797588673}
+  - component: {fileID: 1797588672}
+  - component: {fileID: 1797588671}
   m_Layer: 0
   m_Name: Terrain
   m_TagString: Untagged
@@ -459,13 +461,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
   m_IsActive: 1
---- !u!154 &1226462781
+--- !u!154 &1797588671
 TerrainCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1226462780}
+  m_GameObject: {fileID: 1797588670}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -477,18 +479,18 @@ TerrainCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_TerrainData: {fileID: 15600000, guid: 30ada87e454ee234ab2a39f14edd34ed, type: 2}
+  m_TerrainData: {fileID: 15600000, guid: bf440cb4ebe6ac143a6d298afe11de1a, type: 2}
   m_EnableTreeColliders: 1
---- !u!218 &1226462782
+--- !u!218 &1797588672
 Terrain:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1226462780}
+  m_GameObject: {fileID: 1797588670}
   m_Enabled: 1
   serializedVersion: 6
-  m_TerrainData: {fileID: 15600000, guid: 30ada87e454ee234ab2a39f14edd34ed, type: 2}
+  m_TerrainData: {fileID: 15600000, guid: bf440cb4ebe6ac143a6d298afe11de1a, type: 2}
   m_TreeDistance: 5000
   m_TreeBillboardDistance: 50
   m_TreeCrossFadeLength: 5
@@ -519,16 +521,16 @@ Terrain:
   m_EnableHeightmapRayTracing: 1
   m_EnableTreesAndDetailsRayTracing: 0
   m_TreeMotionVectorModeOverride: 3
---- !u!4 &1226462783
+--- !u!4 &1797588673
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1226462780}
+  m_GameObject: {fileID: 1797588670}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -6211, y: 956, z: -44}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -541,4 +543,4 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
-  - {fileID: 1226462783}
+  - {fileID: 1797588673}
