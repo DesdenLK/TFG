@@ -17,14 +17,14 @@ def crop_and_save_raw(input_path, output_path, crop_left, crop_top, crop_width, 
     print(f"Heightmap recortado y guardado en {output_path} como archivo RAW de 16 bits")
 
 # Parámetros de entrada
-input_path = r"C:\Users\acost\Documents\TFG\PathDrawing\TerFreser_919-2910\dem_10m.png"  # Ruta de la imagen original
-output_path = r"C:\Users\acost\Documents\TFG\PathDrawing\TerFreser_919-2910\dem_FINAL.raw"  # Ruta para guardar el RAW
+input_path = r"C:\Users\acost\Documents\TFG\PathDrawing\Tavascan_934-2864\dem_10m.png"  # Ruta de la imagen original
+output_path = r"C:\Users\acost\Documents\TFG\PathDrawing\Tavascan_934-2864\dem_FINAL.raw"  # Ruta para guardar el RAW
 
 # Definir las dimensiones del recorte
 crop_left = 0    # Coordenada X de inicio del recorte
 crop_top = 0     # Coordenada Y de inicio del recorte
-crop_width = 1025  # Ancho del recorte (ajustar según necesidad)
-crop_height = 1025  # Alto del recorte (ajustar según necesidad)
+crop_width = 1024  # Ancho del recorte (ajustar según necesidad)
+crop_height = 1024  # Alto del recorte (ajustar según necesidad)
 
 # Recortar y guardar como RAW
 crop_and_save_raw(input_path, output_path, crop_left, crop_top, crop_width, crop_height)

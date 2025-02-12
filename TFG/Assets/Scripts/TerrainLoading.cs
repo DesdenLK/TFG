@@ -1,19 +1,63 @@
 using System;
 using System.IO;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
+using static TerrainLoader;
 
 public class TerrainLoader : MonoBehaviour
 {
-    public string rawFilePath; // Ruta del archivo RAW
-    public int rawWidth = 1024;  // Ancho del RAW
-    public int rawHeight = 1024; // Alto del RAW
-    public Terrain terrain;
+    [System.Serializable]
+    public class TerrainInfo
+    {
+        public int heightmapResolution;
+        public int widthmapResolution;
+        public Vector3 size;
+        public string rawFilePath;
+    }
+
+
+
+    public InputField folderPathInput;
+    public GameObject terrainObject;
+    private Terrain terrain;
+    private TerrainInfo terrainInfo;
 
     void Start()
     {
-        float[,] heightMap = LoadRaw16(rawFilePath, rawWidth, rawHeight);
-        FlipHeightMapVertically(ref heightMap); // Voltear el heightMap verticalmente
-        ApplyHeightMapToTerrain(heightMap);
+        terrain = terrainObject.GetComponent<Terrain>();
+    }
+
+    public void loadTerrain()
+    {
+        if (folderPathInput != null) { 
+            string folderPath = folderPathInput.text;
+            terrainInfo = LoadTerrainInfo(folderPath);
+
+
+            if (terrainInfo != null && terrain != null)
+            {
+                terrainObject.SetActive(true);
+                float[,] heightMap = LoadRaw16(Path.Combine(folderPath, terrainInfo.rawFilePath), terrainInfo.widthmapResolution, terrainInfo.widthmapResolution);
+                FlipHeightMapVertically(ref heightMap);
+                ApplyHeightMapToTerrain(heightMap);
+            }
+        }
+    }
+
+    TerrainInfo LoadTerrainInfo(string path)
+    {
+        string infoPath = Path.Combine(path, "info.json");
+        if (File.Exists(infoPath))
+        {
+            string jsonContent = File.ReadAllText(infoPath);
+            return JsonUtility.FromJson<TerrainInfo>(jsonContent);
+        }
+        else
+        {
+            Debug.Log("No se encontró el archivo JSON.");
+            return null;
+        }
     }
 
     float[,] LoadRaw16(string path, int width, int height)
@@ -63,10 +107,15 @@ public class TerrainLoader : MonoBehaviour
     {
         int width = heightMap.GetLength(1);
         int height = heightMap.GetLength(0);
+        Debug.Log("Applying heightmap to terrain: " + width + "x" + height);
         TerrainData terrainData = terrain.terrainData;
 
         terrainData.heightmapResolution = width + 1;
-        terrainData.size = new Vector3(width * 10, 2910 - 919, height * 10); // Ajusta según escala real
+        terrainData.size = terrainData.size = new Vector3(
+            width * terrainInfo.size.x,
+            1 * terrainInfo.size.y,
+            height * terrainInfo.size.z
+        );
 
         terrainData.SetHeights(0, 0, heightMap);
     }
