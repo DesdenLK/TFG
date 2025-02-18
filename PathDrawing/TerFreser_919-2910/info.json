@@ -1,0 +1,10 @@
+{
+    "heightmapResolution": 1025,
+    "widthmapResolution": 1025,
+    "size": {
+        "x": 10,
+        "y": 1991,
+        "z": 10
+    },
+    "rawFilePath": "dem_FINAL.raw"
+}

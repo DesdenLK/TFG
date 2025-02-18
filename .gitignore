@@ -11,7 +11,11 @@
 [Uu]ser[Ss]ettings/
 
 .env
-PathDrawing
+
+PathDrawing/*/*
+!PathDrawing/*/info.json
+
+
 PathDrawing*.zip
 
 # MemoryCaptures can get excessive in size.
