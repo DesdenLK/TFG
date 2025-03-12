@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,19 +15,23 @@ public class TerrainLoader : MonoBehaviour
         public int widthmapResolution;
         public Vector3 size;
         public string rawFilePath;
-        public string slopeFileName;
+        public string[] textureFiles;
     }
 
 
 
     public InputField folderPathInput;
     public GameObject terrainObject;
+    public Dropdown dropdown;
     private Terrain terrain;
     private TerrainInfo terrainInfo;
+    private TerrainLayer[] terrainLayers;
 
     void Start()
     {
         terrain = terrainObject.GetComponent<Terrain>();
+        terrainLayers = new TerrainLayer[] { };
+        dropdown.ClearOptions();
     }
 
     public void loadTerrain()
@@ -34,6 +39,7 @@ public class TerrainLoader : MonoBehaviour
         if (folderPathInput != null) { 
             string folderPath = folderPathInput.text;
             terrainInfo = LoadTerrainInfo(folderPath);
+            dropdown.AddOptions(new List<string>(terrainInfo.textureFiles));
 
 
             if (terrainInfo != null && terrain != null)
@@ -125,22 +131,27 @@ public class TerrainLoader : MonoBehaviour
 
     private void addTerrainLayers(string path, TerrainInfo tInfo)
     {
-        Texture2D texture = LoadTextureFromFile(Path.Combine(path, tInfo.slopeFileName), tInfo.widthmapResolution, tInfo.heightmapResolution);
-
-        if (texture != null)
+        terrainLayers = new TerrainLayer[tInfo.textureFiles.Length];
+        for (int i = 0; i < tInfo.textureFiles.Length; i++)
         {
-            TerrainLayer terrainLayer = new TerrainLayer();
-            terrainLayer.diffuseTexture = texture;
-            terrainLayer.smoothnessSource = TerrainLayerSmoothnessSource.Constant;
-            terrainLayer.tileSize = new Vector2(10240, 10240);
 
+            Texture2D texture = LoadTextureFromFile(Path.Combine(path, tInfo.textureFiles[i]), tInfo.widthmapResolution, tInfo.heightmapResolution);
 
-            assignLayerToTerrain(terrainLayer);
+            if (texture != null)
+            {
+                TerrainLayer terrainLayer = new TerrainLayer();
+                terrainLayer.diffuseTexture = texture;
+                terrainLayer.smoothnessSource = TerrainLayerSmoothnessSource.Constant;
+                terrainLayer.tileSize = new Vector2(tInfo.widthmapResolution * tInfo.size.x-1, tInfo.heightmapResolution * tInfo.size.z);
+
+                terrainLayers[i] = terrainLayer;
+            }
+            else
+            {
+                Debug.LogError("The texture could not be loded");
+            }
         }
-        else
-        {
-            Debug.LogError("The texture could not be loded");
-        }
+        assignLayerToTerrain(0);
     }
 
     Texture2D LoadTextureFromFile(string path, int width, int height)
@@ -160,12 +171,12 @@ public class TerrainLoader : MonoBehaviour
         }
     }
 
-    void assignLayerToTerrain(TerrainLayer terrainLayer)
+    public void assignLayerToTerrain(int index)
     {
         if (terrain != null)
         {
-            TerrainLayer[] terrainLayers = new TerrainLayer[] { terrainLayer };
-            terrain.terrainData.terrainLayers = terrainLayers;
+            TerrainLayer[] tLayers = new TerrainLayer[] { terrainLayers[index] };
+            terrain.terrainData.terrainLayers = tLayers;
         }
 
         else

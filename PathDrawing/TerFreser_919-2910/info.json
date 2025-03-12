@@ -7,5 +7,5 @@
         "z": 10
     },
     "rawFilePath": "dem_FINAL.raw",
-    "slopeFileName": "curv-tangential_w11_cropped.png"
+    "textureFiles": ["curv-tangential_w11_cropped.png","flow_cropped.png"]
 }
