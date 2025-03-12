@@ -7,5 +7,5 @@
         "z": 10
     },
     "rawFilePath": "dem_FINAL.raw",
-    "textureFiles": ["curv-tangential_w11_cropped.png","flow_cropped.png"]
+    "textureFiles": ["curv-tangential_w11_cropped.png","flow_cropped.png", "slope_g8_cropped.png"]
 }
