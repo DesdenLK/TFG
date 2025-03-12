@@ -14,6 +14,7 @@ public class TerrainLoader : MonoBehaviour
         public int widthmapResolution;
         public Vector3 size;
         public string rawFilePath;
+        public string slopeFileName;
     }
 
 
@@ -41,6 +42,8 @@ public class TerrainLoader : MonoBehaviour
                 float[,] heightMap = LoadRaw16(Path.Combine(folderPath, terrainInfo.rawFilePath), terrainInfo.widthmapResolution, terrainInfo.widthmapResolution);
                 FlipHeightMapVertically(ref heightMap);
                 ApplyHeightMapToTerrain(heightMap);
+
+                addTerrainLayers(folderPath, terrainInfo);
             }
         }
     }
@@ -118,5 +121,56 @@ public class TerrainLoader : MonoBehaviour
         );
 
         terrainData.SetHeights(0, 0, heightMap);
+    }
+
+    private void addTerrainLayers(string path, TerrainInfo tInfo)
+    {
+        Texture2D texture = LoadTextureFromFile(Path.Combine(path, tInfo.slopeFileName), tInfo.widthmapResolution, tInfo.heightmapResolution);
+
+        if (texture != null)
+        {
+            TerrainLayer terrainLayer = new TerrainLayer();
+            terrainLayer.diffuseTexture = texture;
+            terrainLayer.smoothnessSource = TerrainLayerSmoothnessSource.Constant;
+            terrainLayer.tileSize = new Vector2(10240, 10240);
+
+
+            assignLayerToTerrain(terrainLayer);
+        }
+        else
+        {
+            Debug.LogError("The texture could not be loded");
+        }
+    }
+
+    Texture2D LoadTextureFromFile(string path, int width, int height)
+    {
+        if (File.Exists(path))
+        {
+            byte[] fileData = File.ReadAllBytes(path);
+            Texture2D tex = new Texture2D(width, height);
+            tex.LoadImage(fileData);
+
+            return tex;
+        }
+        else
+        {
+            Debug.LogError("Could not load the texture");
+            return null;
+        }
+    }
+
+    void assignLayerToTerrain(TerrainLayer terrainLayer)
+    {
+        if (terrain != null)
+        {
+            TerrainLayer[] terrainLayers = new TerrainLayer[] { terrainLayer };
+            terrain.terrainData.terrainLayers = terrainLayers;
+        }
+
+        else
+        {
+            Debug.LogError("Terrain Component not found");
+        }
     }
 }
