@@ -6,5 +6,6 @@
         "y": 1930,
         "z": 10
     },
-    "rawFilePath": "dem_FINAL.raw"
+    "rawFilePath": "dem_FINAL.raw",
+    "textureFiles": ["curv-tangential_w11_cropped.png","flow_cropped.png", "slope_g8_cropped.png"]
 }
