@@ -3,12 +3,14 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using System;
 
 public class WaypointPlacement : MonoBehaviour
 {
     public GameObject waypointPrefab;
     public Button placeStartButton;
     public Button placeEndButton;
+
 
     public LineRenderer lineRenderer;
     public float minDistance = 0.1f;
@@ -19,10 +21,11 @@ public class WaypointPlacement : MonoBehaviour
     private GameObject waypointStart;
     private GameObject waypointEnd;
 
-    private bool isPlacingStart = true;
+    private bool isPlacingStart = false;
     private bool isPlacingEnd = false;
 
     private bool startAddedLine = false;
+    private bool canDraw = false;
 
     public void PlaceStart()
     {
@@ -30,6 +33,7 @@ public class WaypointPlacement : MonoBehaviour
         isPlacingEnd = false;
         placeStartButton.interactable = false;
         placeEndButton.interactable = true;
+        waypoints.Clear();
     }
 
     public void PlaceEnd()
@@ -38,6 +42,7 @@ public class WaypointPlacement : MonoBehaviour
         isPlacingStart = false;
         placeStartButton.interactable = true;
         placeEndButton.interactable = false;
+        waypoints.Clear();
     }
 
     private void UpdatePoints()
@@ -85,11 +90,10 @@ public class WaypointPlacement : MonoBehaviour
             startAddedLine = true;
         }
 
-        if (Input.GetMouseButtonDown(0))
+        if (canDraw && Input.GetMouseButtonDown(0))
         {
             if (EventSystem.current.IsPointerOverGameObject())
                 return;
-            waypoints.Clear();
             isDrawing = true;
         }
         if (isDrawing && Input.GetMouseButton(0))
@@ -112,6 +116,18 @@ public class WaypointPlacement : MonoBehaviour
             waypoints.Add(waypointEnd.transform.position);
             lineRenderer.positionCount = waypoints.Count;
             lineRenderer.SetPositions(waypoints.ToArray());
+        }
+    }
+
+    public void updateToggleInput()
+    {
+        canDraw = !canDraw;
+        Debug.Log("Can draw: " + canDraw);
+        if (canDraw)
+        {
+            waypoints.Clear();
+            lineRenderer.positionCount = 0;
+            startAddedLine = false;
         }
     }
     void Update()
