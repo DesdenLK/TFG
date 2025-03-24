@@ -8,12 +8,13 @@ using System;
 public class WaypointPlacement : MonoBehaviour
 {
     public GameObject waypointPrefab;
+    public GameObject flagPrefab;
     public Button placeStartButton;
     public Button placeEndButton;
 
 
     public LineRenderer lineRenderer;
-    public float minDistance = 0.1f;
+    public float minDistance = 0.001f;
     private List<Vector3> waypoints = new List<Vector3>();
     private bool isDrawing = false;
 
@@ -72,7 +73,7 @@ public class WaypointPlacement : MonoBehaviour
                     {
                         Destroy(waypointEnd);
                     }
-                    waypointEnd = Instantiate(waypointPrefab, hit.point, Quaternion.identity);
+                    waypointEnd = Instantiate(flagPrefab, hit.point, Quaternion.identity);
                     isPlacingEnd = false;
                     placeEndButton.interactable = true;
                 }
@@ -113,9 +114,6 @@ public class WaypointPlacement : MonoBehaviour
         if (isDrawing && Input.GetMouseButtonUp(0))
         {
             isDrawing = false;
-            waypoints.Add(waypointEnd.transform.position);
-            lineRenderer.positionCount = waypoints.Count;
-            lineRenderer.SetPositions(waypoints.ToArray());
         }
     }
 
@@ -123,12 +121,19 @@ public class WaypointPlacement : MonoBehaviour
     {
         canDraw = !canDraw;
         Debug.Log("Can draw: " + canDraw);
-        if (canDraw)
+        if (!canDraw)
         {
-            waypoints.Clear();
-            lineRenderer.positionCount = 0;
-            startAddedLine = false;
+            waypoints.Add(waypointEnd.transform.position);
+            lineRenderer.positionCount = waypoints.Count;
+            lineRenderer.SetPositions(waypoints.ToArray());
         }
+    }
+
+    public void resetLine()
+    {
+        waypoints.Clear();
+        lineRenderer.positionCount = 0;
+        startAddedLine = false;
     }
     void Update()
     {
