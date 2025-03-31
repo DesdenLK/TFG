@@ -6,7 +6,7 @@ public class MetricsCalculation : MonoBehaviour
     public LineRenderer lineRenderer;
     public Text distanceText;
     public Text unevennessText;
-    void getTotalDistance()
+    void getTotal3DDistance()
     {
         float totalDistance = 0;
         for (int i = 0; i < lineRenderer.positionCount - 1; i++)
@@ -15,6 +15,18 @@ public class MetricsCalculation : MonoBehaviour
         }
         Debug.Log("Total Distance (in meters): " + totalDistance);
         distanceText.text = "Total Distance (in meters): " + totalDistance;
+    }
+
+    void getTotal2DDistance()
+    {
+        float totalDistance = 0;
+        for (int i = 0; i < lineRenderer.positionCount - 1; i++)
+        {
+            Vector2 point1 = new Vector2(lineRenderer.GetPosition(i).x, lineRenderer.GetPosition(i).z);
+            Vector2 point2 = new Vector2(lineRenderer.GetPosition(i + 1).x, lineRenderer.GetPosition(i + 1).z);
+            totalDistance += Vector2.Distance(point1, point2);
+        }
+        Debug.Log("Total Distance (in meters): " + totalDistance);
     }
 
     void getTotalUnevenness()
@@ -30,7 +42,7 @@ public class MetricsCalculation : MonoBehaviour
 
     private void Update()
     {
-        getTotalDistance();
+        getTotal3DDistance();
         getTotalUnevenness();
     }
 }

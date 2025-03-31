@@ -11,6 +11,9 @@
 [Uu]ser[Ss]ettings/
 
 .env
+TFG/Assets/CorePro*
+TFG/Assets/TWD*
+
 
 PathDrawing/*/*
 !PathDrawing/*/info.json
