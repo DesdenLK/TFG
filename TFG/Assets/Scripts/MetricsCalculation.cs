@@ -1,48 +1,144 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class MetricsCalculation : MonoBehaviour
 {
     public LineRenderer lineRenderer;
-    public Text distanceText;
-    public Text unevennessText;
-    void getTotal3DDistance()
+    public Text distance3D_text;
+    public Text distance2D_text;
+
+    public Text positiveSlope_text;
+    public Text negativeSlope_text;
+    public Text totalSlope_text;
+
+    public Text metabolicPathCost_text;
+
+    public Terrain terrain;
+    private float resolution = 1f;
+    private float[,] bfsMatrix;
+    private int width, height;
+
+    private bool isTerrainLoaded = false;
+    private bool bfsMatrixLoaded = false;
+
+    struct Metrics
     {
-        float totalDistance = 0;
-        for (int i = 0; i < lineRenderer.positionCount - 1; i++)
-        {
-            totalDistance += Vector3.Distance(lineRenderer.GetPosition(i), lineRenderer.GetPosition(i + 1));
-        }
-        Debug.Log("Total Distance (in meters): " + totalDistance);
-        distanceText.text = "Total Distance (in meters): " + totalDistance;
+        public float distance3D;
+        public float distance2D;
+        public float positiveSlope;
+        public float negativeSlope;
+        public float totalSlope;
+        public float metabolicPathCost;
     }
 
-    void getTotal2DDistance()
+    private Metrics metrics = new Metrics();
+    void getTotalDistance()
     {
-        float totalDistance = 0;
+        float totalDistance3D = 0;
+        float totalDistance2D = 0;
         for (int i = 0; i < lineRenderer.positionCount - 1; i++)
         {
-            Vector2 point1 = new Vector2(lineRenderer.GetPosition(i).x, lineRenderer.GetPosition(i).z);
-            Vector2 point2 = new Vector2(lineRenderer.GetPosition(i + 1).x, lineRenderer.GetPosition(i + 1).z);
-            totalDistance += Vector2.Distance(point1, point2);
+            totalDistance3D += Vector3.Distance(lineRenderer.GetPosition(i), lineRenderer.GetPosition(i + 1));
+            totalDistance2D += Vector2.Distance(new Vector2(lineRenderer.GetPosition(i).x, lineRenderer.GetPosition(i).z), new Vector2(lineRenderer.GetPosition(i + 1).x, lineRenderer.GetPosition(i + 1).z));
         }
-        Debug.Log("Total Distance (in meters): " + totalDistance);
+        metrics.distance3D = totalDistance3D;
+        metrics.distance2D = totalDistance2D;
     }
 
-    void getTotalUnevenness()
+    void getTotalSlope()
     {
-        float totalUnevenness = 0;
+        float totalSlope = 0;
+        float positiveSlope = 0;
+        float negativeSlope = 0;
         for (int i = 0; i < lineRenderer.positionCount - 1; i++)
         {
-            totalUnevenness += Mathf.Abs(lineRenderer.GetPosition(i).y - lineRenderer.GetPosition(i + 1).y);
+            totalSlope += Mathf.Abs(lineRenderer.GetPosition(i).y - lineRenderer.GetPosition(i + 1).y);
+            if (lineRenderer.GetPosition(i).y < lineRenderer.GetPosition(i + 1).y)
+            {
+                positiveSlope += Mathf.Abs(lineRenderer.GetPosition(i).y - lineRenderer.GetPosition(i + 1).y);
+            }
+            else
+            {
+                negativeSlope += Mathf.Abs(lineRenderer.GetPosition(i).y - lineRenderer.GetPosition(i + 1).y);
+            }
         }
-        Debug.Log("Total Unevenness (in meters): " + totalUnevenness);
-        unevennessText.text = "Total Unevenness (in meters): " + totalUnevenness;
+        metrics.totalSlope = totalSlope;
+        metrics.positiveSlope = positiveSlope;
+        metrics.negativeSlope = negativeSlope;
+    }
+
+    void getMetabolicPathCost()
+    {
+        float metabolicPathCost = 0;
+
+        for (int i = 0; i < lineRenderer.positionCount - 1; i++)
+        {
+            Vector2 start = new Vector2(lineRenderer.GetPosition(i).x, lineRenderer.GetPosition(i).z);
+            Vector2 end = new Vector2(lineRenderer.GetPosition(i + 1).x, lineRenderer.GetPosition(i + 1).z);
+            float planarDistance = Vector2.Distance(start, end);
+            float verticalDistance = Mathf.Abs(lineRenderer.GetPosition(i).y - lineRenderer.GetPosition(i + 1).y);
+            float averageSlope = verticalDistance / planarDistance;
+
+            float factor1 = 1 + 7.92f * averageSlope;
+
+            metabolicPathCost += planarDistance * Mathf.Pow(factor1, 1.2f);
+        }
+        metrics.metabolicPathCost = metabolicPathCost;
+    }
+
+    public void setTerrainLoadedTrue()
+    {
+        isTerrainLoaded = true;
+    }
+
+    public void loadBFSMatrix()
+    {
+        /*
+        width = Mathf.CeilToInt(terrain.terrainData.size.x / resolution);
+        height = Mathf.CeilToInt(terrain.terrainData.size.z / resolution);
+        Debug.Log("Width: " + width + " Height: " + height);
+
+        bfsMatrix = new float[width, height];
+
+        for (int x = 0; x < 2; ++x)
+        {
+            for (int z = 0; z < 2; ++z)
+            {
+                float worldX = x * resolution + terrain.transform.position.x;
+                float worldZ = z * resolution + terrain.transform.position.z;
+                float worldY = terrain.SampleHeight(new Vector3(worldX, 0, worldZ));
+
+                bfsMatrix[x, z] = worldY;
+                Debug.Log("BFS Matrix: " + x + bfsMatrix[x, z] + z);
+            }
+        }
+        */
+        bfsMatrixLoaded = true;
+        
+    }
+
+    private void updateMetricsTexts()
+    {
+        distance3D_text.text = metrics.distance3D.ToString();
+        distance2D_text.text = metrics.distance2D.ToString();
+        totalSlope_text.text = metrics.totalSlope.ToString();
+        positiveSlope_text.text = metrics.positiveSlope.ToString();
+        negativeSlope_text.text = metrics.negativeSlope.ToString();
+        metabolicPathCost_text.text = metrics.metabolicPathCost.ToString();
     }
 
     private void Update()
     {
-        getTotal3DDistance();
-        getTotalUnevenness();
+        if (!isTerrainLoaded)
+            return;
+
+        if (!bfsMatrixLoaded) loadBFSMatrix();
+
+        getTotalDistance();
+        getTotalSlope();
+        getMetabolicPathCost();
+
+        updateMetricsTexts();
     }
 }

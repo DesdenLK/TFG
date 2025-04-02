@@ -14,7 +14,7 @@ public class WaypointPlacement : MonoBehaviour
 
 
     public LineRenderer lineRenderer;
-    public float minDistance = 0.001f;
+    public float minDistance = 0.1f;
     private List<Vector3> waypoints = new List<Vector3>();
     private bool isDrawing = false;
 
