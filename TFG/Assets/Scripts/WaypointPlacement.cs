@@ -28,6 +28,11 @@ public class WaypointPlacement : MonoBehaviour
     private bool startAddedLine = false;
     private bool canDraw = false;
 
+    private bool bfsPath = false;
+
+    private PathFinder pathFinder;
+    public Terrain terrain;
+
     public void PlaceStart()
     {
         isPlacingStart = true;
@@ -138,6 +143,23 @@ public class WaypointPlacement : MonoBehaviour
     void Update()
     {
         UpdatePoints();
-        if (waypointEnd != null && waypointStart != null) UpdateLine();
+        if (waypointEnd != null && waypointStart != null)
+        {
+            if (!bfsPath && !canDraw && lineRenderer.positionCount > 0)
+            {
+                pathFinder = new PathFinder(terrain);
+                bool Finded = pathFinder.FindPath(waypointStart.transform.position, waypointEnd.transform.position);
+                if (Finded)
+                {
+                    bfsPath = true;
+                    Debug.Log("Path found!");
+                }
+                else
+                {
+                    Debug.Log("No path found.");
+                }
+            }
+            UpdateLine();
+        } 
     }
 }

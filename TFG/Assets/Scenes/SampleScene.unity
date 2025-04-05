@@ -6208,6 +6208,7 @@ MonoBehaviour:
   placeEndButton: {fileID: 1968959532}
   lineRenderer: {fileID: 2049570463}
   minDistance: 0.1
+  terrain: {fileID: 1082113505}
 --- !u!120 &2049570463
 LineRenderer:
   serializedVersion: 2
@@ -6332,7 +6333,6 @@ MonoBehaviour:
   negativeSlope_text: {fileID: 1750753666}
   totalSlope_text: {fileID: 1741555081}
   metabolicPathCost_text: {fileID: 718501084}
-  terrain: {fileID: 1082113505}
 --- !u!1 &2072022429
 GameObject:
   m_ObjectHideFlags: 0

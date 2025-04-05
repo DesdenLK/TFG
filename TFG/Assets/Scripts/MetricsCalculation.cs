@@ -14,13 +14,7 @@ public class MetricsCalculation : MonoBehaviour
 
     public Text metabolicPathCost_text;
 
-    public Terrain terrain;
-    private float resolution = 1f;
-    private float[,] bfsMatrix;
-    private int width, height;
-
     private bool isTerrainLoaded = false;
-    private bool bfsMatrixLoaded = false;
 
     struct Metrics
     {
@@ -92,32 +86,6 @@ public class MetricsCalculation : MonoBehaviour
         isTerrainLoaded = true;
     }
 
-    public void loadBFSMatrix()
-    {
-        /*
-        width = Mathf.CeilToInt(terrain.terrainData.size.x / resolution);
-        height = Mathf.CeilToInt(terrain.terrainData.size.z / resolution);
-        Debug.Log("Width: " + width + " Height: " + height);
-
-        bfsMatrix = new float[width, height];
-
-        for (int x = 0; x < 2; ++x)
-        {
-            for (int z = 0; z < 2; ++z)
-            {
-                float worldX = x * resolution + terrain.transform.position.x;
-                float worldZ = z * resolution + terrain.transform.position.z;
-                float worldY = terrain.SampleHeight(new Vector3(worldX, 0, worldZ));
-
-                bfsMatrix[x, z] = worldY;
-                Debug.Log("BFS Matrix: " + x + bfsMatrix[x, z] + z);
-            }
-        }
-        */
-        bfsMatrixLoaded = true;
-        
-    }
-
     private void updateMetricsTexts()
     {
         distance3D_text.text = metrics.distance3D.ToString();
@@ -133,7 +101,6 @@ public class MetricsCalculation : MonoBehaviour
         if (!isTerrainLoaded)
             return;
 
-        if (!bfsMatrixLoaded) loadBFSMatrix();
 
         getTotalDistance();
         getTotalSlope();
