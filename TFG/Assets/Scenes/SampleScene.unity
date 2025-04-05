@@ -6717,7 +6717,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Total Negative Slope (meters):'
+  m_Text: 'Metabolic path cost:'
 --- !u!222 &2141112280
 CanvasRenderer:
   m_ObjectHideFlags: 0
