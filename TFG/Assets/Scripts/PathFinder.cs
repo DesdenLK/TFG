@@ -17,20 +17,25 @@ public class PathFinder
 
     public Vector2Int WorldToGrid(Vector3 worldPos)
     {
+
         float x = worldPos.x / terrainGraph.MetersPerCell;
         float y = worldPos.z / terrainGraph.MetersPerCell;
-        return new Vector2Int(Mathf.FloorToInt(x), Mathf.FloorToInt(y));
+        Vector2Int point = new Vector2Int(Mathf.FloorToInt(x), Mathf.FloorToInt(y));
+        Debug.Log($"World to Grid: {worldPos} -> {point}");
+        return point;
     }
 
     public Vector3 GridToWorld(Vector2Int gridPos)
     {
-        float x = (gridPos.x + 0.5f) * terrainGraph.MetersPerCell;
-        float z = (gridPos.y + 0.5f) * terrainGraph.MetersPerCell;
+        float x = (gridPos.x) * terrainGraph.MetersPerCell;
+        float z = (gridPos.y) * terrainGraph.MetersPerCell;
         float y = terrain.SampleHeight(new Vector3(x, 0, z));
-        return new Vector3(x, y, y);
+        Vector3 point = new Vector3(x, y, z);
+        Debug.Log($"Grid to World: {gridPos} -> {point}");
+        return point;
     }
 
-    public bool FindPath(Vector3 startWorldPos, Vector3 endWorldPos)
+    public Dictionary<Vector2Int, Vector2Int> FindPath(Vector3 startWorldPos, Vector3 endWorldPos)
     {
         Vector2Int start = WorldToGrid(startWorldPos);
         Vector2Int end = WorldToGrid(endWorldPos);
@@ -48,9 +53,10 @@ public class PathFinder
         {
             Vector2Int current = queue.Dequeue();
 
-            if (Vector2Int.Distance(current, end) <= 1.5f)
+            if (Vector2Int.Distance(current, end) <= 1.0f)
             {
-                return true;
+                cameFrom[end] = current;
+                return cameFrom;
             }
 
             //Explore all directions
@@ -60,7 +66,7 @@ public class PathFinder
             ExploreNeighbor(current, current + Vector2Int.right, queue, visited, cameFrom);
         }
 
-        return false;
+        return null;
     }
 
     private void ExploreNeighbor(Vector2Int current, Vector2Int newPoint, Queue<Vector2Int> queue, HashSet<Vector2Int> visited, Dictionary<Vector2Int, Vector2Int> cameFrom)
@@ -71,5 +77,21 @@ public class PathFinder
             visited.Add(newPoint);
             cameFrom[newPoint] = current;
         }
+    }
+
+    public List<Vector3> ConvertBFSPathToPoints(Dictionary<Vector2Int, Vector2Int> bfsPath, Vector2Int start, Vector2Int end)
+    {
+        Debug.Log("Converting BFS path to points" + bfsPath.Count);
+        List<Vector3> path = new List<Vector3>();
+        Vector2Int current = end;
+        while (current != start)
+        {
+            path.Add(GridToWorld(current));
+            current = bfsPath[current];
+        }
+        path.Add(GridToWorld(start));
+        path.Reverse();
+        Debug.Log("Path found with " + path.Count + " points.");
+        return path;
     }
 }

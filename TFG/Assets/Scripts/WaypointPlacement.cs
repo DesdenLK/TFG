@@ -28,7 +28,7 @@ public class WaypointPlacement : MonoBehaviour
     private bool startAddedLine = false;
     private bool canDraw = false;
 
-    private bool bfsPath = false;
+    private bool computedBFS = false;
 
     private PathFinder pathFinder;
     public Terrain terrain;
@@ -40,6 +40,7 @@ public class WaypointPlacement : MonoBehaviour
         placeStartButton.interactable = false;
         placeEndButton.interactable = true;
         waypoints.Clear();
+        computedBFS = false;
     }
 
     public void PlaceEnd()
@@ -49,6 +50,7 @@ public class WaypointPlacement : MonoBehaviour
         placeStartButton.interactable = true;
         placeEndButton.interactable = false;
         waypoints.Clear();
+        computedBFS = false;
     }
 
     private void UpdatePoints()
@@ -140,18 +142,34 @@ public class WaypointPlacement : MonoBehaviour
         lineRenderer.positionCount = 0;
         startAddedLine = false;
     }
+
+    private void DrawBFSPath(List<Vector3> bfsPath)
+    {
+        GameObject lineObj = new GameObject("BFSPathLine");
+        LineRenderer lineRenderer = lineObj.AddComponent<LineRenderer>();
+        lineRenderer.positionCount = bfsPath.Count;
+        lineRenderer.startWidth = 100.0f;
+        lineRenderer.endWidth = 100.0f;
+        lineRenderer.startColor = Color.red;
+        lineRenderer.endColor = Color.red;
+        lineRenderer.SetPositions(bfsPath.ToArray());
+        lineRenderer.useWorldSpace = true;
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+    }
     void Update()
     {
         UpdatePoints();
         if (waypointEnd != null && waypointStart != null)
         {
-            if (!bfsPath && !canDraw && lineRenderer.positionCount > 0)
+            if (!computedBFS && !canDraw && lineRenderer.positionCount > 2)
             {
                 pathFinder = new PathFinder(terrain);
-                bool Finded = pathFinder.FindPath(waypointStart.transform.position, waypointEnd.transform.position);
-                if (Finded)
+                Dictionary<Vector2Int, Vector2Int> bfsPathDict = pathFinder.FindPath(waypointStart.transform.position, waypointEnd.transform.position);
+                List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, pathFinder.WorldToGrid(waypointStart.transform.position), pathFinder.WorldToGrid(waypointEnd.transform.position));
+                if (bfsPath != null)
                 {
-                    bfsPath = true;
+                    DrawBFSPath(bfsPath);
+                    computedBFS = true;
                     Debug.Log("Path found!");
                 }
                 else
