@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
+using UnityEngine.Rendering;
 
 public class PathFinder
 {
@@ -120,6 +121,9 @@ public class PathFinder
                 if (Vector2Int.Distance(current, end) <= 1.0f)
                 {
                     cameFrom[end] = current;
+                    float cost = CalculateCostFromHeightmapOptimized(current, end, heightmap);
+                    costSoFar[end] = costSoFar[current] + cost;
+                    Debug.Log("Path found with cost = " + costSoFar[end]);
                     return cameFrom;
                 }
 
@@ -140,6 +144,7 @@ public class PathFinder
         if (terrainGraph.isCellValid(newPoint) && !visited.Contains(newPoint))
         {
             float cost = MetricsCalculation.getMetabolicCostBetweenTwoPoints(GridToWorld(newPoint), GridToWorld(current));
+            cost += Vector2.Distance(newPoint, current) * terrainGraph.MetersPerCell;
             queue.Enqueue(newPoint, cost);
             visited.Add(newPoint);
             cameFrom[newPoint] = current;
@@ -168,8 +173,8 @@ public class PathFinder
 
     private float CalculateCostFromHeightmapOptimized(Vector2Int from, Vector2Int to, float[,] heightmap)
     {
-        float height1 = heightmap[from.y, from.x];
-        float height2 = heightmap[to.y, to.x];
+        float height1 = heightmap[from.y, from.x] * terrainGraph.HeightDifference;
+        float height2 = heightmap[to.y, to.x] * terrainGraph.HeightDifference;
 
         Vector3 start = new Vector3(from.x, height1, from.y);
         Vector3 end = new Vector3(to.x, height2, to.y);
