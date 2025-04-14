@@ -26,6 +26,7 @@ public class TerrainLoader : MonoBehaviour
     private Terrain terrain;
     private TerrainInfo terrainInfo;
     private TerrainLayer[] terrainLayers;
+    private static float[,] heightMap;
 
     void Start()
     {
@@ -79,7 +80,7 @@ public class TerrainLoader : MonoBehaviour
             return null;
         }
 
-        float[,] heightMap = new float[height, width];
+        heightMap = new float[height, width];
 
         for (int y = 0; y < height; y++)
         {
@@ -183,5 +184,10 @@ public class TerrainLoader : MonoBehaviour
         {
             Debug.LogError("Terrain Component not found");
         }
+    }
+
+    public static float[,] GetHeightMap()
+    {
+        return heightMap;
     }
 }

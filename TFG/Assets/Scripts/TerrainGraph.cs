@@ -1,13 +1,17 @@
+using System;
 using UnityEngine;
 
 public class TerrainGraph
 {
     private int width, height;
     private float metersPerCell;
+    private float[,] heightmap;
 
     public int Width => width;
     public int Height => height;
-    public float MetersPerCell => metersPerCell;  
+    public float MetersPerCell => metersPerCell;
+
+    public float[,] Heightmap => heightmap;
 
     public TerrainGraph(Terrain terrain)
     {
@@ -15,6 +19,7 @@ public class TerrainGraph
         this.width = terrainData.heightmapResolution;
         this.height = terrainData.heightmapResolution;
         this.metersPerCell = terrainData.size.x / (width - 1);
+        this.heightmap = TerrainLoader.GetHeightMap();
     }
 
     public bool isCellValid(Vector2Int gridPos)

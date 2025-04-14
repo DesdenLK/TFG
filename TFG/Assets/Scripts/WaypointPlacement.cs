@@ -1,9 +1,11 @@
-using NUnit.Framework;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using System;
+using System.Threading;
+using SystemDebug = System.Diagnostics.Debug;
 
 public class WaypointPlacement : MonoBehaviour
 {
@@ -31,7 +33,9 @@ public class WaypointPlacement : MonoBehaviour
     private bool computedBFS = false;
 
     private PathFinder pathFinder;
+    private GameObject bfsLineRenderer;
     public Terrain terrain;
+    private CancellationTokenSource bfsCancellationTokenSource;
 
     public void PlaceStart()
     {
@@ -41,6 +45,8 @@ public class WaypointPlacement : MonoBehaviour
         placeEndButton.interactable = true;
         waypoints.Clear();
         computedBFS = false;
+        Destroy(bfsLineRenderer);
+        bfsLineRenderer = null;
     }
 
     public void PlaceEnd()
@@ -51,6 +57,8 @@ public class WaypointPlacement : MonoBehaviour
         placeEndButton.interactable = false;
         waypoints.Clear();
         computedBFS = false;
+        Destroy(bfsLineRenderer);
+        bfsLineRenderer = null;
     }
 
     private void UpdatePoints()
@@ -145,37 +153,86 @@ public class WaypointPlacement : MonoBehaviour
 
     private void DrawBFSPath(List<Vector3> bfsPath)
     {
-        GameObject lineObj = new GameObject("BFSPathLine");
-        LineRenderer lineRenderer = lineObj.AddComponent<LineRenderer>();
+        bfsLineRenderer = new GameObject("BFSPathLine");
+        LineRenderer lineRenderer = bfsLineRenderer.AddComponent<LineRenderer>();
         lineRenderer.positionCount = bfsPath.Count;
-        lineRenderer.startWidth = 100.0f;
-        lineRenderer.endWidth = 100.0f;
+        lineRenderer.startWidth = 50.0f;
+        lineRenderer.endWidth = 50.0f;
         lineRenderer.startColor = Color.red;
         lineRenderer.endColor = Color.red;
         lineRenderer.SetPositions(bfsPath.ToArray());
         lineRenderer.useWorldSpace = true;
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
     }
+
+    private void OnDestroy()
+    {
+        bfsCancellationTokenSource?.Cancel();
+        bfsCancellationTokenSource?.Dispose();
+    }
+
+    async UniTaskVoid RunBFSPathFIndingAsync()
+    {
+        if (waypointStart == null || waypointEnd == null || computedBFS) return;
+
+        bfsCancellationTokenSource?.Cancel();
+        bfsCancellationTokenSource?.Dispose();
+        bfsCancellationTokenSource = new CancellationTokenSource();
+
+        computedBFS = true;
+        try
+        {
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+            pathFinder = new PathFinder(terrain);
+            Debug.Log("Starting BFS pathfinding");
+            Vector2Int startGrid = pathFinder.WorldToGrid(waypointStart.transform.position);
+            Vector2Int endGrid = pathFinder.WorldToGrid(waypointEnd.transform.position);
+            Vector3 startWorld = waypointStart.transform.position;
+            Vector3 endWorld = waypointEnd.transform.position;
+
+            stopwatch.Start();
+            Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startWorld, endWorld, bfsCancellationTokenSource.Token);
+            List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
+            stopwatch.Stop();
+            Debug.Log($"BFS pathfinding completed in {stopwatch.ElapsedMilliseconds} ms");
+
+            if (bfsPath != null && bfsPath.Count > 0)
+            {
+                DrawBFSPath(bfsPath);
+                Debug.Log("BFS path found");
+            }
+            else
+            {
+                Debug.Log("No BFS path found");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.Log("Pathfinding was canceled");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Pathfinding error: {ex.Message}");
+        }
+    }
+
     void Update()
     {
         UpdatePoints();
         if (waypointEnd != null && waypointStart != null)
         {
-            if (!computedBFS && !canDraw && lineRenderer.positionCount > 2)
+            if (!computedBFS)
             {
-                pathFinder = new PathFinder(terrain);
-                Dictionary<Vector2Int, Vector2Int> bfsPathDict = pathFinder.FindPath(waypointStart.transform.position, waypointEnd.transform.position);
-                List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, pathFinder.WorldToGrid(waypointStart.transform.position), pathFinder.WorldToGrid(waypointEnd.transform.position));
-                if (bfsPath != null)
-                {
-                    DrawBFSPath(bfsPath);
-                    computedBFS = true;
-                    Debug.Log("Path found!");
-                }
-                else
-                {
-                    Debug.Log("No path found.");
-                }
+                RunBFSPathFIndingAsync().Forget();
+                //PathFinder pathFinder = new PathFinder(terrain);
+                //Vector2Int startGrid = pathFinder.WorldToGrid(waypointStart.transform.position);
+                //Vector2Int endGrid = pathFinder.WorldToGrid(waypointEnd.transform.position);
+                //Vector3 startWorld = waypointStart.transform.position;
+                //Vector3 endWorld = waypointEnd.transform.position;
+                //Dictionary<Vector2Int, Vector2Int> bfsPathDict = pathFinder.FindPath(startWorld, endWorld);
+                //List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
+                //computedBFS = true;
+                //DrawBFSPath(bfsPath);
             }
             UpdateLine();
         } 

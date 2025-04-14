@@ -2,53 +2,47 @@ using System.Collections.Generic;
 
 public class SimplePriorityQueue<T>
 {
-    private List<(T Item, float Priority)> elements = new List<(T, float)>();
+    private List<(T Item, float Priority)> heap = new List<(T, float)>();
 
-    public int Count => elements.Count;
+    public int Count => heap.Count;
 
     public void Enqueue(T item, float priority)
     {
-        elements.Add((item, priority));
+        heap.Add((item, priority));
+        int i = heap.Count - 1;
+        while (i > 0)
+        {
+            int parent = (i - 1) / 2;
+            if (heap[parent].Priority <= heap[i].Priority) break;
+            (heap[parent], heap[i]) = (heap[i], heap[parent]);
+            i = parent;
+        }
     }
 
     public T Dequeue()
     {
-        int bestIndex = 0;
+        T item = heap[0].Item;
+        int last = heap.Count - 1;
+        heap[0] = heap[last];
+        heap.RemoveAt(last);
 
-        for (int i = 0; i < elements.Count; i++)
+        int i = 0;
+        while (true)
         {
-            if (elements[i].Priority < elements[bestIndex].Priority)
-            {
-                bestIndex = i;
-            }
+            int left = 2 * i + 1;
+            int right = 2 * i + 2;
+            if (left >= heap.Count) break;
+
+            int minChild = left;
+            if (right < heap.Count && heap[right].Priority < heap[left].Priority)
+                minChild = right;
+
+            if (heap[i].Priority <= heap[minChild].Priority) break;
+
+            (heap[i], heap[minChild]) = (heap[minChild], heap[i]);
+            i = minChild;
         }
 
-        T bestItem = elements[bestIndex].Item;
-        elements.RemoveAt(bestIndex);
-        return bestItem;
-    }
-
-    public bool TryDequeue(out T item, out float priority)
-    {
-        if (elements.Count == 0)
-        {
-            item = default;
-            priority = default;
-            return false;
-        }
-
-        int bestIndex = 0;
-        for (int i = 0; i < elements.Count; i++)
-        {
-            if (elements[i].Priority < elements[bestIndex].Priority)
-            {
-                bestIndex = i;
-            }
-        }
-
-        item = elements[bestIndex].Item;
-        priority = elements[bestIndex].Priority;
-        elements.RemoveAt(bestIndex);
-        return true;
+        return item;
     }
 }

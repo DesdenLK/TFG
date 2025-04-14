@@ -81,6 +81,17 @@ public class MetricsCalculation : MonoBehaviour
         metrics.metabolicPathCost = metabolicPathCost;
     }
 
+    public static float getMetabolicCostBetweenTwoPoints(Vector3 start, Vector3 end)
+    {
+        Vector2 start2D = new Vector2(start.x, start.z);
+        Vector2 end2D = new Vector2(end.x, end.z);
+        float planarDistance = Vector2.Distance(start2D, end2D);
+        float verticalDistance = Mathf.Abs(start.y - end.y);
+        float averageSlope = verticalDistance / planarDistance;
+        float factor1 = 1 + 7.92f * averageSlope;
+        return planarDistance * Mathf.Pow(factor1, 1.2f);
+    }
+
     public void setTerrainLoadedTrue()
     {
         isTerrainLoaded = true;
