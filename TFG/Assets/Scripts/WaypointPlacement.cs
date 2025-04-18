@@ -183,7 +183,8 @@ public class WaypointPlacement : MonoBehaviour
         try
         {
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-            pathFinder = new PathFinder(terrain);
+            TerrainLoader terrainLoader = GetComponent<TerrainLoader>();
+            pathFinder = new PathFinder(terrain, terrainLoader);
             Debug.Log("Starting BFS pathfinding");
             Vector2Int startGrid = pathFinder.WorldToGrid(waypointStart.transform.position);
             Vector2Int endGrid = pathFinder.WorldToGrid(waypointEnd.transform.position);
@@ -193,6 +194,7 @@ public class WaypointPlacement : MonoBehaviour
             stopwatch.Start();
             Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startWorld, endWorld, bfsCancellationTokenSource.Token);
             List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
+            Debug.Log("BFS PATH COST: " + MetricsCalculation.getMetabolicPathCostFromArray(bfsPath));
             stopwatch.Stop();
             Debug.Log($"BFS pathfinding completed in {stopwatch.ElapsedMilliseconds} ms");
 
@@ -224,15 +226,6 @@ public class WaypointPlacement : MonoBehaviour
             if (!computedBFS)
             {
                 RunBFSPathFIndingAsync().Forget();
-                //PathFinder pathFinder = new PathFinder(terrain);
-                //Vector2Int startGrid = pathFinder.WorldToGrid(waypointStart.transform.position);
-                //Vector2Int endGrid = pathFinder.WorldToGrid(waypointEnd.transform.position);
-                //Vector3 startWorld = waypointStart.transform.position;
-                //Vector3 endWorld = waypointEnd.transform.position;
-                //Dictionary<Vector2Int, Vector2Int> bfsPathDict = pathFinder.FindPath(startWorld, endWorld);
-                //List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
-                //computedBFS = true;
-                //DrawBFSPath(bfsPath);
             }
             UpdateLine();
         } 

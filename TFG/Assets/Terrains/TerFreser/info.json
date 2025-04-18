@@ -1,0 +1,11 @@
+{
+    "heightmapResolution": 1025,
+    "widthmapResolution": 1025,
+    "size": {
+        "x": 10,
+        "y": 1991,
+        "z": 10
+    },
+    "rawFilePath": "dem_FINAL.raw",
+    "textureFiles": ["curv-tangential_w11_cropped.png","flow_cropped.png", "slope_g8_cropped.png"]
+}

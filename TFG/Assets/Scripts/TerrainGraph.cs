@@ -15,13 +15,13 @@ public class TerrainGraph
     public float[,] Heightmap => heightmap;
     public int HeightDifference => heightDifference;
 
-    public TerrainGraph(Terrain terrain)
+    public TerrainGraph(Terrain terrain, TerrainLoader terrainLoader)
     {
         TerrainData terrainData = terrain.terrainData;
         this.width = terrainData.heightmapResolution;
         this.height = terrainData.heightmapResolution;
         this.metersPerCell = terrainData.size.x / (width - 1);
-        this.heightmap = TerrainLoader.GetHeightMap();
+        this.heightmap = terrainLoader.GetHeightMap();
         this.heightDifference = Mathf.FloorToInt(terrainData.size.y);
         Debug.Log($"TerrainGraph created with width: {width}, height: {height}, metersPerCell: {metersPerCell}, heightDifference: {heightDifference}");
     }

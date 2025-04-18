@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -76,9 +78,25 @@ public class MetricsCalculation : MonoBehaviour
 
             float factor1 = 1 + 7.92f * averageSlope;
 
-            metabolicPathCost += planarDistance * Mathf.Pow(factor1, 1.2f);
+            metabolicPathCost += (planarDistance * Mathf.Pow(factor1, 1.2f));
         }
         metrics.metabolicPathCost = metabolicPathCost;
+    }
+
+    public static float getMetabolicPathCostFromArray(List<Vector3> path)
+    {
+        float metabolicPathCost = 0;
+        for (int i = 0; i < path.Count - 1; i++) // Replaced 'Length' with 'Count'  
+        {
+            Vector2 start = new Vector2(path[i].x, path[i].z);
+            Vector2 end = new Vector2(path[i + 1].x, path[i + 1].z);
+            float planarDistance = Vector2.Distance(start, end);
+            float verticalDistance = Mathf.Abs(path[i].y - path[i + 1].y);
+            float averageSlope = verticalDistance / planarDistance;
+            float factor1 = 1 + 7.92f * averageSlope;
+            metabolicPathCost += (planarDistance * Mathf.Pow(factor1, 1.2f));
+        }
+        return metabolicPathCost;
     }
 
     public static float getMetabolicCostBetweenTwoPoints(Vector3 start, Vector3 end)
@@ -109,6 +127,7 @@ public class MetricsCalculation : MonoBehaviour
 
     private void Update()
     {
+        if (PlayerPrefs.GetString("SelectedTerrain") != null) setTerrainLoadedTrue(); 
         if (!isTerrainLoaded)
             return;
 

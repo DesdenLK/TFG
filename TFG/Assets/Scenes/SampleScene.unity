@@ -1888,7 +1888,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &606350321
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2743,7 +2743,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1842216606}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.9999999
+  m_Size: 0.99999994
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -6167,7 +6167,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06f69f0afd07b3849bfbf7c0aa954ce9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  folderPathInput: {fileID: 1843133949}
   terrainObject: {fileID: 1082113503}
   dropdown: {fileID: 634032212}
 --- !u!4 &2049570461
@@ -6262,8 +6261,8 @@ LineRenderer:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0
-        value: 1
+        time: 1
+        value: 0.52830696
         inSlope: 0
         outSlope: 0
         tangentMode: 0

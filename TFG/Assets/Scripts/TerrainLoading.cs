@@ -18,27 +18,26 @@ public class TerrainLoader : MonoBehaviour
         public string[] textureFiles;
     }
 
-
-
-    public InputField folderPathInput;
     public GameObject terrainObject;
     public Dropdown dropdown;
     private Terrain terrain;
     private TerrainInfo terrainInfo;
     private TerrainLayer[] terrainLayers;
-    private static float[,] heightMap;
+    private float[,] heightMap;
 
     void Start()
     {
         terrain = terrainObject.GetComponent<Terrain>();
         terrainLayers = new TerrainLayer[] { };
         dropdown.ClearOptions();
+        loadTerrain();
     }
 
     public void loadTerrain()
     {
-        if (folderPathInput != null) { 
-            string folderPath = folderPathInput.text;
+        string selectedTerrain = PlayerPrefs.GetString("SelectedTerrain");
+        if (selectedTerrain != null) {
+            string folderPath = selectedTerrain;
             terrainInfo = LoadTerrainInfo(folderPath);
             dropdown.AddOptions(new List<string>(terrainInfo.textureFiles));
 
@@ -186,7 +185,7 @@ public class TerrainLoader : MonoBehaviour
         }
     }
 
-    public static float[,] GetHeightMap()
+    public float[,] GetHeightMap()
     {
         return heightMap;
     }

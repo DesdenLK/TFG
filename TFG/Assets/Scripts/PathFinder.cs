@@ -12,10 +12,10 @@ public class PathFinder
 
 
 
-    public PathFinder(Terrain terrain)
+    public PathFinder(Terrain terrain, TerrainLoader terrainLoader)
     {
         this.terrain = terrain;
-        this.terrainGraph = new TerrainGraph(terrain);
+        this.terrainGraph = new TerrainGraph(terrain, terrainLoader);
     }
 
     public Vector2Int WorldToGrid(Vector3 worldPos)
@@ -57,43 +57,6 @@ public class PathFinder
         }, cancellationToken: token);
     }
 
-
-
-    public Dictionary<Vector2Int, Vector2Int> FindPath(Vector3 startWorldPos, Vector3 endWorldPos)
-    {
-        Vector2Int start = WorldToGrid(startWorldPos);
-        Vector2Int end = WorldToGrid(endWorldPos);
-
-        SimplePriorityQueue<Vector2Int> queue = new SimplePriorityQueue<Vector2Int>();
-        Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
-
-        HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
-
-        queue.Enqueue(start,0);
-        cameFrom[start] = new Vector2Int(-1, -1);
-        visited.Add(start);
-
-        while (queue.Count > 0)
-        {
-            Debug.Log("Queue count: " + queue.Count);
-            Vector2Int current = queue.Dequeue();
-
-            if (Vector2Int.Distance(current, end) <= 1.0f)
-            {
-                cameFrom[end] = current;
-                return cameFrom;
-            }
-
-            //Explore all directions
-            ExploreNeighbor(current, current + Vector2Int.up, queue, visited, cameFrom);
-            ExploreNeighbor(current, current + Vector2Int.down, queue, visited, cameFrom);
-            ExploreNeighbor(current, current + Vector2Int.left, queue, visited, cameFrom);
-            ExploreNeighbor(current, current + Vector2Int.right, queue, visited, cameFrom);
-        }
-
-        return null;
-    }
-
     public async UniTask<Dictionary<Vector2Int, Vector2Int>> FindPathThreadedAsync(Vector3 startWorldPos, Vector3 endWorldPos, CancellationToken token = default)
     {
         return await UniTask.RunOnThreadPool(() =>
@@ -132,23 +95,14 @@ public class PathFinder
                 ExploreNeighborAsync(current, current + Vector2Int.down, heightmap, queue, costSoFar, cameFrom);
                 ExploreNeighborAsync(current, current + Vector2Int.left, heightmap, queue, costSoFar, cameFrom);
                 ExploreNeighborAsync(current, current + Vector2Int.right, heightmap, queue, costSoFar, cameFrom);
+                //ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.left, heightmap, queue, costSoFar, cameFrom);
+                //ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.right, heightmap, queue, costSoFar, cameFrom);
+                //ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.left, heightmap, queue, costSoFar, cameFrom);
+                //ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.right, heightmap, queue, costSoFar, cameFrom);
             }
 
             return null;
         }, cancellationToken: token);
-    }
-
-
-    private void ExploreNeighbor(Vector2Int current, Vector2Int newPoint, SimplePriorityQueue<Vector2Int> queue, HashSet<Vector2Int> visited, Dictionary<Vector2Int, Vector2Int> cameFrom)
-    {
-        if (terrainGraph.isCellValid(newPoint) && !visited.Contains(newPoint))
-        {
-            float cost = MetricsCalculation.getMetabolicCostBetweenTwoPoints(GridToWorld(newPoint), GridToWorld(current));
-            cost += Vector2.Distance(newPoint, current) * terrainGraph.MetersPerCell;
-            queue.Enqueue(newPoint, cost);
-            visited.Add(newPoint);
-            cameFrom[newPoint] = current;
-        }
     }
 
     private void ExploreNeighborAsync(Vector2Int current, Vector2Int neighbor,
