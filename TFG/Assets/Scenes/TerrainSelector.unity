@@ -668,7 +668,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefabButton: {fileID: 3479748332368904140, guid: 5957cde9e3c895849b60aa3d659624be, type: 3}
   panelTransform: {fileID: 625278232}
-  textureList: []
 --- !u!4 &1142534521
 Transform:
   m_ObjectHideFlags: 0
