@@ -52,6 +52,7 @@ class Terrains(Base):
     size_X = Column(Integer, nullable=False)
     size_Y = Column(Integer, nullable=False)
     size_Z = Column(Integer, nullable=False)
+    creator = Column(UUID(as_uuid=True), ForeignKey('users.uuid'), nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
 
 class TerrainLevels(Base):

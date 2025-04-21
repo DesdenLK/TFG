@@ -28,6 +28,17 @@ class User(BaseModel):
     name: str
     password: str
 
+class Terrain(BaseModel):
+    name: str
+    description: str
+    isPublic: bool
+    heightmapResolution: int
+    widthmapResolution: int
+    size_X: int
+    size_Y: int
+    size_Z: int
+    creator: str
+
 @app.post("/register-user")
 async def register_user(user: User, db: sqlalchemy.orm.Session = Depends(get_db)):
     existing_user = db.query(Users).filter(Users.name == user.name).first()
@@ -57,6 +68,42 @@ async def login(user: User, db: sqlalchemy.orm.Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+@app.post("/new-terrain")
+async def new_terrain(terrain: Terrain, db: sqlalchemy.orm.Session = Depends(get_db)):
+    from models import Terrains as TerrainModel  # Import your SQLAlchemy Terrain model
+
+    new_terrain = TerrainModel(
+        name=terrain.name,
+        description=terrain.description,
+        isPublic=terrain.isPublic,
+        heightmapResolution=terrain.heightmapResolution,
+        widthmapResolution=terrain.widthmapResolution,
+        size_X=terrain.size_X,
+        size_Y=terrain.size_Y,
+        size_Z=terrain.size_Z
+    )
+    user = db.query(Users).filter(Users.name == terrain.creator).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+    new_terrain.creator = user.uuid
+
+    try:
+        db.add(new_terrain)
+        db.commit()
+        db.refresh(new_terrain)
+        return {
+            "message": "Terrain created successfully",
+            "statuscode": 200,
+            "terrain": {
+                "name": new_terrain.name,
+                "uuid": new_terrain.uuid
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
