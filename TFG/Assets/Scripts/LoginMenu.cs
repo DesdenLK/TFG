@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 [System.Serializable]
 public class UserRequest
@@ -43,6 +44,7 @@ public class LoginMenu : MonoBehaviour
 
     public void OnLoginButtonClick()
     {
+        responseText.text = "";
         UserRequest userRequest = new UserRequest
         {
             name = usernameInput.text,
@@ -76,13 +78,18 @@ public class LoginMenu : MonoBehaviour
         }
         else
         {
+            PlayerPrefs.SetString("username", usernameInput.text);
             responseText.text = "Login successful!";
             responseText.color = Color.green;
+            SceneManager.LoadScene("MainMenu");
         }
+        usernameInput.text = "";
+        passwordInput.text = "";
     }
 
     public void OnRegisterButtonClick()
     {
+        responseText.text = "";
         UserRequest userRequest = new UserRequest
         {
             name = usernameInput.text,
@@ -94,6 +101,8 @@ public class LoginMenu : MonoBehaviour
 
     private void OnRegisterResponse(string response)
     {
+        usernameInput.text = "";
+        passwordInput.text = "";
         if (response.Contains("ERROR: 400"))
         {
             responseText.text = "User already registered.";
