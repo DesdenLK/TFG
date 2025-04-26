@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI, HTTPException, Request, Depends
 from sqlalchemy import create_engine
 import sqlalchemy
@@ -28,6 +29,10 @@ class User(BaseModel):
     name: str
     password: str
 
+class TextureFile(BaseModel):
+    textureFileName: str
+    textureFileBytes: bytes
+
 class Terrain(BaseModel):
     name: str
     description: str
@@ -38,6 +43,9 @@ class Terrain(BaseModel):
     size_Y: int
     size_Z: int
     creator: str
+    rawFileName: str
+    rawFileBytes: bytes
+    textureFiles: List[TextureFile]
 
 @app.post("/register-user")
 async def register_user(user: User, db: sqlalchemy.orm.Session = Depends(get_db)):
@@ -70,7 +78,8 @@ async def login(user: User, db: sqlalchemy.orm.Session = Depends(get_db)):
 
 @app.post("/new-terrain")
 async def new_terrain(terrain: Terrain, db: sqlalchemy.orm.Session = Depends(get_db)):
-    from models import Terrains as TerrainModel  # Import your SQLAlchemy Terrain model
+    from models import Terrains as TerrainModel
+    from models import FileStorage as FileStorageModel
 
     new_terrain = TerrainModel(
         name=terrain.name,
@@ -89,8 +98,29 @@ async def new_terrain(terrain: Terrain, db: sqlalchemy.orm.Session = Depends(get
 
     try:
         db.add(new_terrain)
-        db.commit()
+        db.flush()  
         db.refresh(new_terrain)
+
+        new_raw_file = FileStorageModel(
+            terrain_uuid=new_terrain.uuid,
+            filename=terrain.rawFileName,
+            filetype="Heightmap",
+            file_data=bytes(terrain.rawFileBytes)
+        )
+
+        db.add(new_raw_file)
+        for texture in terrain.textureFiles:
+            print(texture.textureFileName)
+            print(texture.textureFileBytes)
+            new_texture_file = FileStorageModel(
+                terrain_uuid=new_terrain.uuid,
+                filename=texture.textureFileName,
+                filetype="Texture",
+                file_data=bytes(texture.textureFileBytes)
+            )
+            db.add(new_texture_file)
+        db.commit()
+
         return {
             "message": "Terrain created successfully",
             "statuscode": 200,
