@@ -24,4 +24,14 @@ public class MainMenu : MonoBehaviour
         PlayerPrefs.SetString("username", "");
         SceneManager.LoadScene("Login");
     }
+
+    public void onFreePracticeCkick()
+    {
+        SceneManager.LoadScene("TerrainSelector");
+    }
+
+    public void onNewTerrainClick()
+    {
+        SceneManager.LoadScene("NewTerrain");
+    }
 }

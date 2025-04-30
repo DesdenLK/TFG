@@ -5,6 +5,7 @@ using System.IO;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 
 public class TextureFile
@@ -166,5 +167,10 @@ public class NewTerrain : MonoBehaviour
 
             rawFileBytes = File.ReadAllBytes(filePath);
         }
+    }
+
+    public void onBackButtonClick()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 }

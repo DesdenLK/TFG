@@ -29,4 +29,22 @@ public class Requests
             }
         }
     }
+
+    public IEnumerator GetRequest(string endpoint, System.Action<string> callback)
+    {
+        string url = baseUrl + endpoint;
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.downloadHandler = new DownloadHandlerBuffer();
+            yield return request.SendWebRequest();
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                callback?.Invoke(request.downloadHandler.text);
+            }
+            else
+            {
+                callback?.Invoke($"ERROR: {request.responseCode} - {request.downloadHandler.text}");
+            }
+        }
+    }
 }

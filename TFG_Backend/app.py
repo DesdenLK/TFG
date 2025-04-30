@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import FastAPI, HTTPException, Request, Depends
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, or_
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker, Session
 from models import Base, Users  # Asegúrate de importar tus modelos desde tu archivo models.py
@@ -110,8 +110,6 @@ async def new_terrain(terrain: Terrain, db: sqlalchemy.orm.Session = Depends(get
 
         db.add(new_raw_file)
         for texture in terrain.textureFiles:
-            print(texture.textureFileName)
-            print(texture.textureFileBytes)
             new_texture_file = FileStorageModel(
                 terrain_uuid=new_terrain.uuid,
                 filename=texture.textureFileName,
@@ -134,6 +132,25 @@ async def new_terrain(terrain: Terrain, db: sqlalchemy.orm.Session = Depends(get
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
+
+@app.get("/terrains/{username}")
+async def get_terrains(username: str, db: sqlalchemy.orm.Session = Depends(get_db)):
+    from models import Terrains as TerrainModel
+    
+    user = db.query(Users).filter(Users.name == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    terrains = db.query(TerrainModel).filter(
+        or_(TerrainModel.creator == user.uuid, TerrainModel.isPublic == True)).all()
+    if not terrains:
+        raise HTTPException(status_code=404, detail="No terrains found for this user")
+
+    return {
+        "message": "Terrains retrieved successfully",
+        "statuscode": 200,
+        "terrains": [{"name": terrain.name, "description": terrain.description, "uuid": terrain.uuid} for terrain in terrains]
+    }
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

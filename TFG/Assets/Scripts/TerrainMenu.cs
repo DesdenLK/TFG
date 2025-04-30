@@ -6,19 +6,72 @@ using System.IO;
 using System;
 using UnityEditor.SearchService;
 using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
+
+[System.Serializable]
+public class TerrainsResponse
+{
+    public string message;
+    public int statuscode;
+    public List<TerrainGet> terrains;
+}
+public class TerrainGet
+{
+    public string name;
+    public string description;
+    public string uuid;
+}
 
 public class TerrainMenu : MonoBehaviour
 {
-    public GameObject prefabButton;
+    public GameObject NotDownloadedPanel;
     public Transform panelTransform;
 
-    private int numSubfolders = 0;
-    private string[] subfolders = new string[0];
+    public Texture2D colorTexture;
+    public Texture2D blackTexture;
+
+    private Requests requestHandler;
+    private List<TerrainGet> terrainList;
+
+    public GameObject DownloadPanel;
+
+
 
 
     void Start()
     {
-        createMenu();
+        string path = Path.Combine(Application.persistentDataPath, "terrains");
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+        requestHandler = new Requests();
+        terrainList = new List<TerrainGet>();
+        string username = PlayerPrefs.GetString("username", "Luca");
+        if (username == "")
+        {
+            username = "Luca";
+        }
+        string terrainsUrl = "/terrains/" + username;
+        Debug.Log("Terrains URL: " + terrainsUrl);
+        StartCoroutine(requestHandler.GetRequest(terrainsUrl, OnGetTerrains));
+    }
+
+    private void OnGetTerrains(string response)
+    {
+        if (response.Contains("ERROR"))
+        {
+            Debug.Log("Error on the request " + response);
+        }
+        else
+        {
+            TerrainsResponse terrainsResponse = JsonConvert.DeserializeObject<TerrainsResponse>(response);
+            Debug.Log("Response: " + response);
+            Debug.Log("TerrainsResponse: " + terrainsResponse);
+            terrainList = terrainsResponse.terrains;
+            Debug.Log($"Terrains recibidos: {terrainList.Count}");
+            createMenu();
+        }
     }
 
     Texture2D CargarImagenDesdeArchivo(string ruta)
@@ -44,40 +97,41 @@ public class TerrainMenu : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-        string terrrainsPath = "Assets/Terrains/";
-        if (Directory.Exists(terrrainsPath))
+
+        string path = Path.Combine(Application.persistentDataPath, "terrains");
+        for (int i = 0; i < terrainList.Count; i++)
         {
-            subfolders = Directory.GetDirectories(terrrainsPath);
-            numSubfolders = subfolders.Length;
-        }
-
-        for (int i = 0; i < numSubfolders; i++)
-        {
-            GameObject newPanelButton = Instantiate(prefabButton, panelTransform);
-
-            newPanelButton.GetComponentInChildren<Text>().text = Path.GetFileName(subfolders[i]);
-
-            Image imageComponent = newPanelButton.GetComponentInChildren<Button>().GetComponentInChildren<Image>();
-            if (imageComponent != null)
+            if (!Directory.Exists(Path.Combine(path, terrainList[i].uuid)))
             {
-                Texture2D texture = CargarImagenDesdeArchivo(Path.Combine(subfolders[i], "preview.jpg"));
-                if (texture != null)
-                {
-                    Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                    imageComponent.sprite = sprite;
-                }
-            }
 
-            int index = i;
-            newPanelButton.GetComponentInChildren<Button>().onClick.AddListener(() => SelectTerrain(index));
+                GameObject newPanelButton = Instantiate(NotDownloadedPanel, panelTransform);
+
+                newPanelButton.GetComponentInChildren<Text>().text = terrainList[i].name;
+
+                Image imageComponent = newPanelButton.GetComponentInChildren<Image>();
+                Sprite sprite = Sprite.Create(blackTexture, new Rect(0, 0, blackTexture.width, blackTexture.height), new Vector2(0.5f, 0.5f));
+                imageComponent.sprite = sprite;
+
+                int index = i;
+                newPanelButton.GetComponentInChildren<Button>().onClick.AddListener(() => DownloadTerrainMenu(index));
+            }
         }
     }
 
-    private void SelectTerrain(int index)
+    public void closeDownloadPanel()
     {
-        PlayerPrefs.SetString("SelectedTerrain", subfolders[index]);
-        PlayerPrefs.SetInt("SelectedTerrainIndex", index);
+        DownloadPanel.SetActive(false);
+    }
 
-        SceneManager.LoadScene("SampleScene");
+    public void backButtonTerrainMenu()
+    {
+        SceneManager.LoadScene("TerrainSelector");
+    }
+
+    private void DownloadTerrainMenu(int index)
+    {
+        DownloadPanel.SetActive(true);
+        DownloadPanel.transform.Find("Name").GetComponent<Text>().text = terrainList[index].name;
+        DownloadPanel.transform.Find("Description").GetComponent<Text>().text = terrainList[index].description;
     }
 }
