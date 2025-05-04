@@ -138,6 +138,12 @@ public class TerrainMenu : MonoBehaviour
         }
     }
 
+    private void LoadTerrain(int index)
+    {
+        PlayerPrefs.SetString("SelectedTerrain", Path.Combine(Application.persistentDataPath, "terrains", terrainList[index].uuid));
+        SceneManager.LoadScene("SampleScene");
+    }
+
     private void createTerrainList()
     {
         string path = Path.Combine(Application.persistentDataPath, "terrains");
@@ -168,6 +174,7 @@ public class TerrainMenu : MonoBehaviour
                 imageComponent.sprite = sprite;
 
                 int index = i;
+                newPanelButton.GetComponentInChildren<Button>().onClick.AddListener(() => LoadTerrain(index));
             }
         }
     }
