@@ -151,6 +151,47 @@ async def get_terrains(username: str, db: sqlalchemy.orm.Session = Depends(get_d
         "statuscode": 200,
         "terrains": [{"name": terrain.name, "description": terrain.description, "uuid": terrain.uuid} for terrain in terrains]
     }
+
+
+@app.get("/download-terrain/{terrain_uuid}")
+async def download_terrain(terrain_uuid: str, db: sqlalchemy.orm.Session = Depends(get_db)):
+    from models import Terrains as TerrainModel
+    from models import FileStorage as FileStorageModel
+
+    terrain = db.query(TerrainModel).filter(TerrainModel.uuid == terrain_uuid).first()
+    if not terrain:
+        raise HTTPException(status_code=404, detail="Terrain not found")
+
+    raw_file = db.query(FileStorageModel).filter(
+        FileStorageModel.terrain_uuid == terrain.uuid,
+        FileStorageModel.filetype == "Heightmap"
+    ).first()
+
+    texture_files = db.query(FileStorageModel).filter(
+        FileStorageModel.terrain_uuid == terrain.uuid,
+        FileStorageModel.filetype == "Texture"
+    ).all()
+
+    if not raw_file:
+        raise HTTPException(status_code=404, detail="Raw file not found")
+
+    return {
+        "message": "Terrain files retrieved successfully",
+        "statuscode": 200,
+        "terrain": {
+            "name": terrain.name,
+            "uuid": terrain.uuid,
+            "heightmapResolution": terrain.heightmapResolution,
+            "widthmapResolution": terrain.widthmapResolution,
+            "size_X": terrain.size_X,
+            "size_Y": terrain.size_Y,
+            "size_Z": terrain.size_Z,
+            "rawFileName": raw_file.filename,
+            "rawFileBytes": raw_file.file_data,
+            "textureFiles": [{"textureFileName": tf.filename, "textureFileBytes": tf.file_data} for tf in texture_files]
+        }
+    }
+
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

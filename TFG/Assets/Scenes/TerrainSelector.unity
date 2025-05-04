@@ -318,7 +318,7 @@ GameObject:
   - component: {fileID: 343083552}
   - component: {fileID: 343083551}
   m_Layer: 5
-  m_Name: Text (Legacy)
+  m_Name: TextDownload
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -955,10 +955,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   NotDownloadedPanel: {fileID: 3479748332368904140, guid: 5957cde9e3c895849b60aa3d659624be, type: 3}
+  DownloadedPanel: {fileID: 3479748332368904140, guid: 0ee083433e2232b4983bf6b72479cbe5, type: 3}
   panelTransform: {fileID: 625278232}
   colorTexture: {fileID: 2800000, guid: f1d0293642edfed42bc7dfddf027e24f, type: 3}
   blackTexture: {fileID: 2800000, guid: 70d908603e5155b46b601b43ebf298da, type: 3}
   DownloadPanel: {fileID: 1303719341}
+  mainBackButton: {fileID: 2008658465}
 --- !u!4 &1142534521
 Transform:
   m_ObjectHideFlags: 0
@@ -988,7 +990,7 @@ GameObject:
   - component: {fileID: 1177504685}
   - component: {fileID: 1177504684}
   m_Layer: 5
-  m_Name: Button (Legacy)
+  m_Name: DownloadButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1057,7 +1059,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1177504685}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1142534520}
+        m_TargetAssemblyTypeName: TerrainMenu, Assembly-CSharp
+        m_MethodName: onDownloadClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1177504685
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1883,7 +1897,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7065402329879764546, guid: cdfec6359ebc467448873257131e468e, type: 3}
       propertyPath: m_Name
-      value: Back Button
+      value: MainBackButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 7065402329879764546, guid: cdfec6359ebc467448873257131e468e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1893,6 +1911,11 @@ PrefabInstance:
 --- !u!224 &2008658464 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 794205697209832361, guid: cdfec6359ebc467448873257131e468e, type: 3}
+  m_PrefabInstance: {fileID: 2008658463}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2008658465 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7065402329879764546, guid: cdfec6359ebc467448873257131e468e, type: 3}
   m_PrefabInstance: {fileID: 2008658463}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &2094220922
