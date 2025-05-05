@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 using static TerrainLoader;
@@ -188,5 +189,10 @@ public class TerrainLoader : MonoBehaviour
     public float[,] GetHeightMap()
     {
         return heightMap;
+    }
+
+    public void onBackButton()
+    {
+        SceneManager.LoadScene(PlayerPrefs.GetString("PreviousScene", "MainMenu"));
     }
 }

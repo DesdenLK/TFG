@@ -20,6 +20,11 @@ public class TerrainGet
     public string name;
     public string description;
     public string uuid;
+    public int heightmapResolution;
+    public int widthmapResolution;
+    public int size_X;
+    public int size_Y;
+    public int size_Z;
 }
 
 public class TerrainFilesResponse
@@ -39,11 +44,6 @@ public class TerrainFilesGet
 {
     public string name;
     public string uuid;
-    public int heightmapResolution;
-    public int widthmapResolution;
-    public int size_X;
-    public int size_Y;
-    public int size_Z;
     public string rawFileName;
     public byte[] rawFileBytes;
     public List<TextureFileGet> textureFiles;
@@ -141,6 +141,7 @@ public class TerrainMenu : MonoBehaviour
     private void LoadTerrain(int index)
     {
         PlayerPrefs.SetString("SelectedTerrain", Path.Combine(Application.persistentDataPath, "terrains", terrainList[index].uuid));
+        PlayerPrefs.SetString("PreviousScene", "TerrainSelector");
         SceneManager.LoadScene("SampleScene");
     }
 
@@ -156,9 +157,9 @@ public class TerrainMenu : MonoBehaviour
 
                 newPanelButton.GetComponentInChildren<Text>().text = terrainList[i].name;
 
-                Image imageComponent = newPanelButton.GetComponentInChildren<Image>();
-                Sprite sprite = Sprite.Create(blackTexture, new Rect(0, 0, blackTexture.width, blackTexture.height), new Vector2(0.5f, 0.5f));
-                imageComponent.sprite = sprite;
+                //Image imageComponent = newPanelButton.GetComponentInChildren<Image>();
+                //Sprite sprite = Sprite.Create(blackTexture, new Rect(0, 0, blackTexture.width, blackTexture.height), new Vector2(0.5f, 0.5f));
+                //imageComponent.sprite = sprite;
 
                 int index = i;
                 newPanelButton.GetComponentInChildren<Button>().onClick.AddListener(() => DownloadTerrainMenu(index));
@@ -169,12 +170,21 @@ public class TerrainMenu : MonoBehaviour
 
                 newPanelButton.GetComponentInChildren<Text>().text = terrainList[i].name;
 
-                Image imageComponent = newPanelButton.GetComponentInChildren<Image>();
-                Sprite sprite = Sprite.Create(colorTexture, new Rect(0, 0, colorTexture.width, colorTexture.height), new Vector2(0.5f, 0.5f));
-                imageComponent.sprite = sprite;
+                //Image imageComponent = newPanelButton.GetComponentInChildren<Image>();
+                //Sprite sprite = Sprite.Create(colorTexture, new Rect(0, 0, colorTexture.width, colorTexture.height), new Vector2(0.5f, 0.5f));
+                //imageComponent.sprite = sprite;
 
                 int index = i;
-                newPanelButton.GetComponentInChildren<Button>().onClick.AddListener(() => LoadTerrain(index));
+                newPanelButton.transform.Find("Play").GetComponent<Button>().onClick.AddListener(() => LoadTerrain(index));
+                newPanelButton.transform.Find("Delete").GetComponent<Button>().onClick.AddListener(() =>
+                {
+                    string terrainPath = Path.Combine(path, terrainList[index].uuid);
+                    if (Directory.Exists(terrainPath))
+                    {
+                        Directory.Delete(terrainPath, true);
+                        createMenu();
+                    }
+                });
             }
         }
     }
@@ -207,6 +217,8 @@ public class TerrainMenu : MonoBehaviour
         DownloadPanel.SetActive(true);
         DownloadPanel.transform.Find("Name").GetComponent<Text>().text = terrainList[index].name;
         DownloadPanel.transform.Find("Description").GetComponent<Text>().text = terrainList[index].description;
+        DownloadPanel.transform.Find("HeightmapResolution").GetComponent<Text>().text = terrainList[index].widthmapResolution + " x " + terrainList[index].heightmapResolution;
+        DownloadPanel.transform.Find("GridSize").GetComponent<Text>().text = terrainList[index].size_X + " x " + terrainList[index].size_Y + " x " + terrainList[index].size_Z;
     }
 
     public void onDownloadClick()
@@ -221,13 +233,14 @@ public class TerrainMenu : MonoBehaviour
 
     private string createInfoJSON(TerrainFilesGet terainInfo)
     {
+        TerrainGet terrainGet = terrainList[selectedIndex];
         TerrainJsonData terrainJsonData = new TerrainJsonData();
-        terrainJsonData.heightmapResolution = terainInfo.heightmapResolution;
-        terrainJsonData.widthmapResolution = terainInfo.widthmapResolution;
+        terrainJsonData.heightmapResolution = terrainGet.heightmapResolution;
+        terrainJsonData.widthmapResolution = terrainGet.widthmapResolution;
         terrainJsonData.size = new TerrainJsonData.Size();
-        terrainJsonData.size.x = terainInfo.size_X;
-        terrainJsonData.size.y = terainInfo.size_Y;
-        terrainJsonData.size.z = terainInfo.size_Z;
+        terrainJsonData.size.x = terrainGet.size_X;
+        terrainJsonData.size.y = terrainGet.size_Y;
+        terrainJsonData.size.z = terrainGet.size_Z;
         terrainJsonData.rawFilePath = terainInfo.rawFileName;
         terrainJsonData.textureFiles = new List<string>();
         foreach (TextureFileGet textureFile in terainInfo.textureFiles)

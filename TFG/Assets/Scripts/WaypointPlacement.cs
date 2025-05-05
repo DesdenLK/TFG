@@ -13,6 +13,7 @@ public class WaypointPlacement : MonoBehaviour
     public GameObject flagPrefab;
     public Button placeStartButton;
     public Button placeEndButton;
+    public Button computeOptimalButton;
 
 
     public LineRenderer lineRenderer;
@@ -45,8 +46,9 @@ public class WaypointPlacement : MonoBehaviour
         placeEndButton.interactable = true;
         waypoints.Clear();
         computedBFS = false;
-        Destroy(bfsLineRenderer);
-        bfsLineRenderer = null;
+        if (bfsLineRenderer != null) Destroy(bfsLineRenderer);
+        computeOptimalButton.interactable = true;
+        resetLine();
     }
 
     public void PlaceEnd()
@@ -57,8 +59,9 @@ public class WaypointPlacement : MonoBehaviour
         placeEndButton.interactable = false;
         waypoints.Clear();
         computedBFS = false;
-        Destroy(bfsLineRenderer);
-        bfsLineRenderer = null;
+        if (bfsLineRenderer != null) Destroy(bfsLineRenderer);
+        computeOptimalButton.interactable = true;
+        resetLine();
     }
 
     private void UpdatePoints()
@@ -218,15 +221,20 @@ public class WaypointPlacement : MonoBehaviour
         }
     }
 
+    public void onComputeOptimalClick()
+    {
+        if (!computedBFS)
+        {
+            computeOptimalButton.interactable = false;
+            RunBFSPathFIndingAsync().Forget();
+        }
+    }
+
     void Update()
     {
         UpdatePoints();
         if (waypointEnd != null && waypointStart != null)
         {
-            if (!computedBFS)
-            {
-                RunBFSPathFIndingAsync().Forget();
-            }
             UpdateLine();
         } 
     }
