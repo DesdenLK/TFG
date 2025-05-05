@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Newtonsoft.Json.Bson;
 
 
 public class TextureFile
@@ -48,9 +49,12 @@ public class NewTerrain : MonoBehaviour
     public Text rawFileText;
 
     public Button createTerrainButton;
+    public Button backButton;
     private Requests requestHandler;
     private byte[] rawFileBytes;
     private List<TextureFile> textureFiles;
+
+    private bool creatingTerrain = false;
 
     public void AddTextureFileToList(TextureFile textureFile)
     {
@@ -93,7 +97,7 @@ public class NewTerrain : MonoBehaviour
         }
         else
         {
-            createTerrainButton.interactable = true;
+            if (!creatingTerrain) createTerrainButton.interactable = true;
             terrainRequest.name = name.text;
             terrainRequest.description = description.text;
             terrainRequest.widthmapResolution = int.Parse(widthResolution.text); // Fixed property name  
@@ -112,19 +116,45 @@ public class NewTerrain : MonoBehaviour
 
         }
     }
+
+    private void clearFields()
+    {
+        name.text = "";
+        description.text = "";
+        widthResolution.text = "";
+        heightResolution.text = "";
+        size_x.text = "";
+        size_y.text = "";
+        size_z.text = "";
+        rawFileText.text = "No file selected";
+        textureFiles.Clear();
+        foreach (Transform child in textureListContent)
+        {
+            Destroy(child.gameObject);
+        }
+    }
     public void OnCreateTerrainButtonClick()
     {
+        creatingTerrain = true;
+        backButton.interactable = false;
+        createTerrainButton.interactable = false;
         string json = JsonConvert.SerializeObject(terrainRequest);
         StartCoroutine(requestHandler.PostRequest(createTerrainUrl, json, OnCreateTerrainResponse));
+        
     }
     private void OnCreateTerrainResponse(string response)
     {
+        backButton.interactable = true;
+        createTerrainButton.interactable = true;
+
         if (response.Contains("ERROR"))
         {
             Debug.Log("Error on the request " + response);
         }
         else
         {
+            clearFields();
+            creatingTerrain = false;
             Debug.Log("Terrain created successfully: " + response);
         }
     }

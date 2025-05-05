@@ -284,6 +284,7 @@ public class TerrainMenu : MonoBehaviour
             DownloadPanel.transform.Find("DownloadButton").GetComponent<Button>().interactable = true;
             DownloadPanel.transform.Find("Back Button").GetComponent<Button>().interactable = true;
             DownloadPanel.SetActive(false);
+            mainBackButton.SetActive(true);
         }
     }
 }

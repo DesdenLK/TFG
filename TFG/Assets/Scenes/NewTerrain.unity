@@ -2088,7 +2088,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 850316661}
   m_HandleRect: {fileID: 850316660}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2189,6 +2189,7 @@ MonoBehaviour:
   textureLabelPrefab: {fileID: 326983190633754879, guid: 05811a6944f9c3048b6058bfc998a6be, type: 3}
   rawFileText: {fileID: 920539015}
   createTerrainButton: {fileID: 156799658}
+  backButton: {fileID: 1237088941}
 --- !u!1 &721251346
 GameObject:
   m_ObjectHideFlags: 0
@@ -3590,6 +3591,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 794205697209832361, guid: cdfec6359ebc467448873257131e468e, type: 3}
   m_PrefabInstance: {fileID: 1237088939}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1237088941 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7030555188009558996, guid: cdfec6359ebc467448873257131e468e, type: 3}
+  m_PrefabInstance: {fileID: 1237088939}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1247852909
 GameObject:
   m_ObjectHideFlags: 0
@@ -4731,7 +4743,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 886570376}
   m_HandleRect: {fileID: 886570375}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
