@@ -994,7 +994,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 383171301}
         m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
-        m_MethodName: onFreePracticeCkick
+        m_MethodName: onFreePracticeClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1280,9 +1280,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LoginMenu, Assembly-CSharp
-        m_MethodName: OnLoginButtonClick
+      - m_Target: {fileID: 383171301}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
+        m_MethodName: onPlayOnlineClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

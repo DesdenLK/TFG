@@ -47,6 +47,18 @@ class Terrain(BaseModel):
     rawFileBytes: bytes
     textureFiles: List[TextureFile]
 
+class TerrainLevel(BaseModel):
+    name: str
+    description: str
+    terrain_uuid: str
+    start_X: float
+    start_Y: float
+    start_Z : float
+    end_X: float
+    end_Y: float
+    end_Z: float
+    creator: str
+
 @app.post("/register-user")
 async def register_user(user: User, db: sqlalchemy.orm.Session = Depends(get_db)):
     existing_user = db.query(Users).filter(Users.name == user.name).first()
@@ -197,6 +209,45 @@ async def download_terrain(terrain_uuid: str, db: sqlalchemy.orm.Session = Depen
             "textureFiles": [{"textureFileName": tf.filename, "textureFileBytes": tf.file_data} for tf in texture_files]
         }
     }
+
+@app.post("/create-level/{terrain_uuid}")
+async def create_level(terrain_uuid: str, level: TerrainLevel, db: sqlalchemy.orm.Session = Depends(get_db)):
+    from models import TerrainLevels as TerrainLevelModel
+
+
+
+    new_level = TerrainLevelModel(
+        name=level.name,
+        description=level.description,
+        terrain_uuid=level.terrain_uuid,
+        start_X=level.start_X,
+        start_Y=level.start_Y,
+        start_Z=level.start_Z,
+        end_X=level.end_X,
+        end_Y=level.end_Y,
+        end_Z=level.end_Z
+    )
+    user = db.query(Users).filter(Users.name == level.creator).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+    new_level.creator = user.uuid
+
+    try:
+        db.add(new_level)
+        db.commit()
+        return {
+            "message": "Level created successfully",
+            "statuscode": 200,
+            "level": {
+                "name": new_level.name,
+                "uuid": new_level.uuid
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
 
 if __name__ == '__main__':
     import uvicorn

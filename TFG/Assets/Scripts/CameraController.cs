@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CameraController : MonoBehaviour
 {
@@ -17,6 +18,15 @@ public class CameraController : MonoBehaviour
     }
     void Update()
     {
+        if (EventSystem.current != null &&
+            EventSystem.current.currentSelectedGameObject != null &&
+            (EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.InputField>() != null ||
+                EventSystem.current.currentSelectedGameObject.GetComponent<TMPro.TMP_InputField>() != null))
+        {
+            return;
+        }
+
+
         if (Input.GetMouseButton(1))
         {
             Cursor.visible = false;

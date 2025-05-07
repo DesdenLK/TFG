@@ -25,8 +25,15 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene("Login");
     }
 
-    public void onFreePracticeCkick()
+    public void onPlayOnlineClick()
     {
+        PlayerPrefs.SetInt("isOnline", 1);
+        SceneManager.LoadScene("TerrainSelector");
+    }
+
+    public void onFreePracticeClick()
+    {
+        PlayerPrefs.SetInt("isOnline", 0);
         SceneManager.LoadScene("TerrainSelector");
     }
 

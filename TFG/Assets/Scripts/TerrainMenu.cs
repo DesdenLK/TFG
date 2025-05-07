@@ -138,11 +138,16 @@ public class TerrainMenu : MonoBehaviour
         }
     }
 
-    private void LoadTerrain(int index)
+    private void LoadTerrainOrLevels(int index)
     {
         PlayerPrefs.SetString("SelectedTerrain", Path.Combine(Application.persistentDataPath, "terrains", terrainList[index].uuid));
+        PlayerPrefs.SetString("TerrainUUID", terrainList[index].uuid);
         PlayerPrefs.SetString("PreviousScene", "TerrainSelector");
-        SceneManager.LoadScene("SampleScene");
+        if (PlayerPrefs.GetInt("isOnline") == 1)
+        {
+            SceneManager.LoadScene("LevelSelector");
+        }
+        else SceneManager.LoadScene("SampleScene");
     }
 
     private void createTerrainList()
@@ -175,7 +180,7 @@ public class TerrainMenu : MonoBehaviour
                 //imageComponent.sprite = sprite;
 
                 int index = i;
-                newPanelButton.transform.Find("Play").GetComponent<Button>().onClick.AddListener(() => LoadTerrain(index));
+                newPanelButton.transform.Find("Play").GetComponent<Button>().onClick.AddListener(() => LoadTerrainOrLevels(index));
                 newPanelButton.transform.Find("Delete").GetComponent<Button>().onClick.AddListener(() =>
                 {
                     string terrainPath = Path.Combine(path, terrainList[index].uuid);
