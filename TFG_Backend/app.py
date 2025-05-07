@@ -249,6 +249,34 @@ async def create_level(terrain_uuid: str, level: TerrainLevel, db: sqlalchemy.or
     finally:
         db.close()
 
+@app.get("/levels/{terrain_uuid}")
+async def get_levels(terrain_uuid: str, db: sqlalchemy.orm.Session = Depends(get_db)):
+    from models import TerrainLevels as TerrainLevelModel
+
+    levels = db.query(TerrainLevelModel).filter(TerrainLevelModel.terrain_uuid == terrain_uuid).all()
+    if not levels:
+        raise HTTPException(status_code=404, detail="No levels found for this terrain")
+
+    return {
+        "message": "Levels retrieved successfully",
+        "statuscode": 200,
+        "levels": [
+            {
+                "uuid": level.uuid,
+                "name": level.name,
+                "description": level.description,
+                "start_X": level.start_X,
+                "start_Y": level.start_Y,
+                "start_Z": level.start_Z,
+                "end_X": level.end_X,
+                "end_Y": level.end_Y,
+                "end_Z": level.end_Z,
+                "creator": level.creator,
+                "created_at": level.created_at.strftime("%Y-%m-%d %H:%M:%S") if level.created_at else None
+            } 
+            for level in levels]
+    }
+
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

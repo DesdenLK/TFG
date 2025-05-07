@@ -140,7 +140,6 @@ public class CreateLevel : MonoBehaviour
         }
         levelResponseText.text = "Level created successfully!";
         levelResponseText.color = Color.green;
-        Debug.Log("Level created: " + response);
     }
 
     public void onTerrainMenuClick()
