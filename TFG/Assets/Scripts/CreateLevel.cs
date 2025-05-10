@@ -9,7 +9,6 @@ public class LevelRequest
 {
     public string name;
     public string description;
-    public string terrain_uuid;
     public float start_X;
     public float start_Y;
     public float start_Z;
@@ -111,7 +110,6 @@ public class CreateLevel : MonoBehaviour
         {
             name = levelName.text,
             description = levelDescription.text,
-            terrain_uuid = PlayerPrefs.GetString("TerrainUUID"),
             start_X = waypointStart.transform.position.x,
             start_Y = waypointStart.transform.position.y,
             start_Z = waypointStart.transform.position.z,

@@ -50,7 +50,6 @@ class Terrain(BaseModel):
 class TerrainLevel(BaseModel):
     name: str
     description: str
-    terrain_uuid: str
     start_X: float
     start_Y: float
     start_Z : float
@@ -58,6 +57,17 @@ class TerrainLevel(BaseModel):
     end_Y: float
     end_Z: float
     creator: str
+
+class LevelScore(BaseModel):
+    level_uuid: str
+    user: str
+    total2D_distance: float
+    total3D_distance: float
+    total_slope: float
+    total_positive_slope: float
+    total_negative_slope: float
+    metabolic_cost: float
+
 
 @app.post("/register-user")
 async def register_user(user: User, db: sqlalchemy.orm.Session = Depends(get_db)):
@@ -219,7 +229,7 @@ async def create_level(terrain_uuid: str, level: TerrainLevel, db: sqlalchemy.or
     new_level = TerrainLevelModel(
         name=level.name,
         description=level.description,
-        terrain_uuid=level.terrain_uuid,
+        terrain_uuid=terrain_uuid,
         start_X=level.start_X,
         start_Y=level.start_Y,
         start_Z=level.start_Z,
@@ -256,6 +266,9 @@ async def get_levels(terrain_uuid: str, db: sqlalchemy.orm.Session = Depends(get
     levels = db.query(TerrainLevelModel).filter(TerrainLevelModel.terrain_uuid == terrain_uuid).all()
     if not levels:
         raise HTTPException(status_code=404, detail="No levels found for this terrain")
+    
+    creators = db.query(Users).filter(Users.uuid.in_([level.creator for level in levels])).all()
+    creator_dict = {creator.uuid: creator.name for creator in creators} 
 
     return {
         "message": "Levels retrieved successfully",
@@ -271,10 +284,71 @@ async def get_levels(terrain_uuid: str, db: sqlalchemy.orm.Session = Depends(get
                 "end_X": level.end_X,
                 "end_Y": level.end_Y,
                 "end_Z": level.end_Z,
-                "creator": level.creator,
+                "creator": creator_dict.get(level.creator, "Unknown"),
+                "creator_uuid": level.creator,
                 "created_at": level.created_at.strftime("%Y-%m-%d %H:%M:%S") if level.created_at else None
             } 
             for level in levels]
+    }
+
+@app.post("/submit-level-score")
+async def submit_level_score(score: LevelScore, db: sqlalchemy.orm.Session = Depends(get_db)):
+    from models import LevelScores as LevelScoreModel
+
+    user = db.query(Users).filter(Users.name == score.user).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+
+    new_score = LevelScoreModel(
+        level_uuid=score.level_uuid,
+        user_uuid=user.uuid,
+        total2D_distance=score.total2D_distance,
+        total3D_distance=score.total3D_distance,
+        total_slope=score.total_slope,
+        total_positive_slope=score.total_positive_slope,
+        total_negative_slope=score.total_negative_slope,
+        metabolic_cost=score.metabolic_cost
+    )
+    try:
+        db.add(new_score)
+        db.commit()
+        return {
+            "message": "Level score submitted successfully",
+            "statuscode": 200
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+@app.get("/level-scores/{level_uuid}")
+async def get_level_scores(level_uuid: str, db: sqlalchemy.orm.Session = Depends(get_db)):
+    from models import LevelScores as LevelScoreModel
+
+    scores = db.query(LevelScoreModel).filter(LevelScoreModel.level_uuid == level_uuid).all()
+    if not scores:
+        raise HTTPException(status_code=404, detail="No scores found for this level")
+
+    users = db.query(Users).filter(Users.uuid.in_([score.user_uuid for score in scores])).all()
+    user_dict = {user.uuid: user.name for user in users} 
+
+    return {
+        "message": "Level scores retrieved successfully",
+        "statuscode": 200,
+        "scores": [
+            {
+                "uuid": score.uuid,
+                "user": user_dict.get(score.user_uuid, "Unknown"),
+                "total2D_distance": score.total2D_distance,
+                "total3D_distance": score.total3D_distance,
+                "total_slope": score.total_slope,
+                "total_positive_slope": score.total_positive_slope,
+                "total_negative_slope": score.total_negative_slope,
+                "metabolic_cost": score.metabolic_cost,
+                "created_at": score.created_at.strftime("%Y-%m-%d %H:%M:%S") if score.created_at else None
+            } 
+            for score in scores]
     }
 
 if __name__ == '__main__':

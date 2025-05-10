@@ -70,3 +70,17 @@ class TerrainLevels(Base):
     end_Z = Column(Float, nullable=False)
     creator = Column(UUID(as_uuid=True), ForeignKey('users.uuid'), nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
+
+class LevelScores(Base):
+    __tablename__ = 'level_scores'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    uuid = Column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
+    level_uuid = Column(UUID(as_uuid=True), ForeignKey('terrain_levels.uuid'), nullable=False)
+    user_uuid = Column(UUID(as_uuid=True), ForeignKey('users.uuid'), nullable=False)
+    total2D_distance = Column(Float, nullable=False)
+    total3D_distance = Column(Float, nullable=False)
+    total_slope = Column(Float, nullable=False)
+    total_positive_slope = Column(Float, nullable=False)
+    total_negative_slope = Column(Float, nullable=False)
+    metabolic_cost = Column(Float, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.now)
