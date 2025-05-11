@@ -24,7 +24,6 @@ public class PathFinder
         float x = worldPos.x / terrainGraph.MetersPerCell;
         float y = worldPos.z / terrainGraph.MetersPerCell;
         Vector2Int point = new Vector2Int(Mathf.FloorToInt(x), Mathf.FloorToInt(y));
-        //Debug.Log($"World to Grid: {worldPos} -> {point}");
         return point;
     }
 
@@ -34,27 +33,7 @@ public class PathFinder
         float z = (gridPos.y) * terrainGraph.MetersPerCell;
         float y = terrain.SampleHeight(new Vector3(x, 0, z));
         Vector3 point = new Vector3(x, y, z);
-        //Debug.Log($"Grid to World: {gridPos} -> {point}");
         return point;
-    }
-
-    private async UniTask<Vector3> GridToWorldAsync(Vector2Int gridPos, CancellationToken token)
-    {
-        // Mueve la llamada a SampleHeight al hilo principal
-        return await UniTask.RunOnThreadPool(async () =>
-        {
-            // Primero realiza el cálculo de la posición sin SampleHeight
-            float x = gridPos.x * terrainGraph.MetersPerCell;
-            float z = gridPos.y * terrainGraph.MetersPerCell;
-
-            // Cambia al hilo principal para llamar a SampleHeight
-            await UniTask.SwitchToMainThread();
-
-            // Ahora llama a SampleHeight en el hilo principal
-            float y = terrain.SampleHeight(new Vector3(x, 0, z));
-
-            return new Vector3(x, y, z);
-        }, cancellationToken: token);
     }
 
     public async UniTask<Dictionary<Vector2Int, Vector2Int>> FindPathThreadedAsync(Vector3 startWorldPos, Vector3 endWorldPos, CancellationToken token = default)
@@ -69,7 +48,8 @@ public class PathFinder
             SimplePriorityQueue<Vector2Int> queue = new SimplePriorityQueue<Vector2Int>();
             Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
 
-            Dictionary<Vector2Int, float> costSoFar = new Dictionary<Vector2Int, float>();
+            int estimatedNodes = terrainGraph.Width * terrainGraph.Height;
+            Dictionary<Vector2Int, float> costSoFar = new Dictionary<Vector2Int, float>(estimatedNodes);
 
             queue.Enqueue(start, 0);
             cameFrom[start] = new Vector2Int(-1, -1);
@@ -77,7 +57,6 @@ public class PathFinder
 
             while (queue.Count > 0)
             {
-                Debug.Log("Queue count: " + queue.Count);
                 token.ThrowIfCancellationRequested();
                 Vector2Int current = queue.Dequeue();
 
@@ -91,10 +70,10 @@ public class PathFinder
                 }
 
                 // Explorar vecinos secuencialmente para evitar problemas de token
-                ExploreNeighborAsync(current, current + Vector2Int.up, heightmap, queue, costSoFar, cameFrom);
-                ExploreNeighborAsync(current, current + Vector2Int.down, heightmap, queue, costSoFar, cameFrom);
-                ExploreNeighborAsync(current, current + Vector2Int.left, heightmap, queue, costSoFar, cameFrom);
-                ExploreNeighborAsync(current, current + Vector2Int.right, heightmap, queue, costSoFar, cameFrom);
+                ExploreNeighborAsync(current, current + Vector2Int.up, heightmap, queue, costSoFar, cameFrom, end);
+                ExploreNeighborAsync(current, current + Vector2Int.down, heightmap, queue, costSoFar, cameFrom, end);
+                ExploreNeighborAsync(current, current + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
+                ExploreNeighborAsync(current, current + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
                 //ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.left, heightmap, queue, costSoFar, cameFrom);
                 //ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.right, heightmap, queue, costSoFar, cameFrom);
                 //ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.left, heightmap, queue, costSoFar, cameFrom);
@@ -109,19 +88,25 @@ public class PathFinder
                            float[,] heightmap,
                            SimplePriorityQueue<Vector2Int> queue,
                           Dictionary<Vector2Int, float> costSoFar,
-                           Dictionary<Vector2Int, Vector2Int> cameFrom)
+                           Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int end)
     {
-        float currentCost = costSoFar[current];
         if (!terrainGraph.isCellValid(neighbor)) return;
 
-        // Calcula costos usando el heightmap precargado
-        float cost = CalculateCostFromHeightmapOptimized(current, neighbor, heightmap);
-        if (!costSoFar.ContainsKey(neighbor) || currentCost + cost < costSoFar[neighbor])
+        float currentCost = costSoFar[current];
+        float stepCost = CalculateCostFromHeightmapOptimized(current, neighbor, heightmap);
+        float newCost = currentCost + stepCost;
+   
+
+        if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor])
         {
-            float newCost = currentCost + cost;
             costSoFar[neighbor] = newCost;
-            queue.Enqueue(neighbor, newCost);
             cameFrom[neighbor] = current;
+
+            // Heurística admisible: distancia en línea recta (podrías usar tu fórmula metabólica también)
+            float heuristic = Vector2Int.Distance(neighbor, end);
+            float priority = newCost + heuristic;
+
+            queue.Enqueue(neighbor, priority);
         }
     }
 
