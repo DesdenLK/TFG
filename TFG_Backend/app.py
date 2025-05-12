@@ -178,7 +178,7 @@ async def get_terrains(username: str, db: sqlalchemy.orm.Session = Depends(get_d
     terrains = db.query(TerrainModel).filter(
         or_(TerrainModel.creator == user.uuid, TerrainModel.isPublic == True)).all()
     if not terrains:
-        raise HTTPException(status_code=404, detail="No terrains found for this user")
+        terrains = []
 
     return {
         "message": "Terrains retrieved successfully",
@@ -298,7 +298,7 @@ async def get_levels(terrain_uuid: str, db: sqlalchemy.orm.Session = Depends(get
 
     levels = db.query(TerrainLevelModel).filter(TerrainLevelModel.terrain_uuid == terrain_uuid).all()
     if not levels:
-        raise HTTPException(status_code=404, detail="No levels found for this terrain")
+        levels = []
     
     creators = db.query(Users).filter(Users.uuid.in_([level.creator for level in levels])).all()
     creator_dict = {creator.uuid: creator.name for creator in creators} 
@@ -361,7 +361,7 @@ async def get_level_scores(level_uuid: str, db: sqlalchemy.orm.Session = Depends
 
     scores = db.query(LevelScoreModel).filter(LevelScoreModel.level_uuid == level_uuid).all()
     if not scores:
-        raise HTTPException(status_code=404, detail="No scores found for this level")
+        scores = []
 
     users = db.query(Users).filter(Users.uuid.in_([score.user_uuid for score in scores])).all()
     user_dict = {user.uuid: user.name for user in users} 

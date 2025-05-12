@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ScoreRequest
@@ -38,6 +39,8 @@ public class OnlineLevelBehaviour : MonoBehaviour
     private Requests requestHandler;
 
     public GameObject metricViewContent;
+    public GameObject savedScorePanel;
+    public GameObject buttonPanel;
 
     private void UpdateLine()
     {
@@ -88,6 +91,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
 
     public void onSaveScore()
     {
+        buttonPanel.SetActive(false);
         ScoreRequest scoreRequest = new ScoreRequest
         {
             level_uuid = PlayerPrefs.GetString("LevelUUID"),
@@ -105,7 +109,43 @@ public class OnlineLevelBehaviour : MonoBehaviour
 
     private void OnScoreResponse(string json)
     {
+        savedScorePanel.SetActive(true);
+        if (json.Contains("ERROR"))
+        {
+            savedScorePanel.transform.Find("Text").GetComponent<Text>().text = "Error saving score";
+            savedScorePanel.transform.Find("Text").GetComponent<Text>().color = Color.red;
+        }
+        else
+        {
+            savedScorePanel.transform.Find("Text").GetComponent<Text>().text = "Score saved successfully!";
+            savedScorePanel.transform.Find("Text").GetComponent<Text>().color = Color.green;
+        }
+        resetLine();
         Debug.Log("Score response: " + json);
+    }
+
+    public void onTerrainMenuClick()
+    {
+        savedScorePanel.SetActive(false);
+        SceneManager.LoadScene("TerrainSelector");
+    }
+
+    public void onMainMenuClick()
+    {
+        savedScorePanel.SetActive(false);
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    public void onLevelMenuClick()
+    {
+        savedScorePanel.SetActive(false);
+        SceneManager.LoadScene("LevelSelector");
+    }
+
+    public void onContinueButtonClick()
+    {
+        buttonPanel.SetActive(true);
+        savedScorePanel.SetActive(false);
     }
 
     public void resetLine()
@@ -126,7 +166,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
     {
         if (waypointEnd != null && waypointStart != null)
         {
-            if (!isDrawing && lineRenderer.positionCount > 0 && lineRenderer.GetPosition(lineRenderer.positionCount - 1) != waypointEnd.transform.position)
+            if (canDraw || (lineRenderer.positionCount > 0 && lineRenderer.GetPosition(lineRenderer.positionCount - 1) != waypointEnd.transform.position))
             {
                 saveScore.interactable = false;
             }

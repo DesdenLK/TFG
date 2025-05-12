@@ -32,6 +32,7 @@ public class WaypointPlacement : MonoBehaviour
     private bool canDraw = false;
 
     private bool computedBFS = false;
+    private bool executingBFS = false;
 
     private PathFinder pathFinder;
     private GameObject bfsLineRenderer;
@@ -196,11 +197,13 @@ public class WaypointPlacement : MonoBehaviour
             Vector3 endWorld = waypointEnd.transform.position;
 
             stopwatch.Start();
+            executingBFS = true;
             Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startWorld, endWorld, bfsCancellationTokenSource.Token);
             Debug.Log("BFS pathfinding completed in " + stopwatch.ElapsedMilliseconds + " ms");
             List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
             Debug.Log("BFS PATH COST: " + MetricsCalculation.getMetabolicPathCostFromArray(bfsPath));
             stopwatch.Stop();
+            executingBFS = false;
 
             if (bfsPath != null && bfsPath.Count > 0)
             {
@@ -233,6 +236,16 @@ public class WaypointPlacement : MonoBehaviour
 
     void Update()
     {
+        if (executingBFS)
+        {
+            placeStartButton.interactable = false;
+            placeEndButton.interactable = false;
+        }
+        else
+        {
+            if (!isPlacingStart) placeStartButton.interactable = true;
+            if (!isPlacingEnd) placeEndButton.interactable = true;
+        }
         UpdatePoints();
         if (waypointEnd != null && waypointStart != null)
         {
