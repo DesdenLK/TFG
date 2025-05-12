@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, LargeBinary, String, UUID, DateTime, Enum
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Index, Integer, LargeBinary, String, UUID, DateTime, Enum
 from enum import Enum as PyEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -69,6 +69,12 @@ class TerrainLevels(Base):
     end_Y = Column(Float, nullable=False)
     end_Z = Column(Float, nullable=False)
     creator = Column(UUID(as_uuid=True), ForeignKey('users.uuid'), nullable=False)
+    optimal_total3D_distance = Column(Float, nullable=False, default=0.0)
+    optimal_total2D_distance = Column(Float, nullable=False, default=0.0)
+    optimal_total_slope = Column(Float, nullable=False, default=0.0)
+    optimal_total_positive_slope = Column(Float, nullable=False, default=0.0)
+    optimal_total_negative_slope = Column(Float, nullable=False, default=0.0)
+    optimal_metabolic_cost = Column(Float, nullable=False, default=0.0)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
 
 class LevelScores(Base):
@@ -77,10 +83,25 @@ class LevelScores(Base):
     uuid = Column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
     level_uuid = Column(UUID(as_uuid=True), ForeignKey('terrain_levels.uuid'), nullable=False)
     user_uuid = Column(UUID(as_uuid=True), ForeignKey('users.uuid'), nullable=False)
-    total2D_distance = Column(Float, nullable=False)
     total3D_distance = Column(Float, nullable=False)
+    total2D_distance = Column(Float, nullable=False)
     total_slope = Column(Float, nullable=False)
     total_positive_slope = Column(Float, nullable=False)
     total_negative_slope = Column(Float, nullable=False)
     metabolic_cost = Column(Float, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
+
+
+class OptimalPathPoint(Base):
+    __tablename__ = 'optimal_path_points'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    uuid = Column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
+    level_uuid = Column(UUID(as_uuid=True), ForeignKey('terrain_levels.uuid'), nullable=False)
+    index = Column(Integer, nullable=False) # Index of the point in the path
+    point_X = Column(Float, nullable=False)
+    point_Y = Column(Float, nullable=False)
+    point_Z = Column(Float, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.now)
+    __table_args__ = (
+        Index('idx_level_uuid_index', 'level_uuid', 'index'),
+    )

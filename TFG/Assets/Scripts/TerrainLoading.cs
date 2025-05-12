@@ -120,7 +120,7 @@ public class TerrainLoader : MonoBehaviour
         Debug.Log("Applying heightmap to terrain: " + width + "x" + height);
         TerrainData terrainData = terrain.terrainData;
 
-        terrainData.heightmapResolution = width + 1;
+        terrainData.heightmapResolution = width;
         terrainData.size = terrainData.size = new Vector3(
             width * terrainInfo.size.x,
             1 * terrainInfo.size.y,

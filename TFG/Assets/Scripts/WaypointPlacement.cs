@@ -187,6 +187,7 @@ public class WaypointPlacement : MonoBehaviour
         {
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             TerrainLoader terrainLoader = GetComponent<TerrainLoader>();
+            Debug.Log("Starting BFS pathfinding 1");
             pathFinder = new PathFinder(terrain, terrainLoader);
             Debug.Log("Starting BFS pathfinding");
             Vector2Int startGrid = pathFinder.WorldToGrid(waypointStart.transform.position);
@@ -196,10 +197,10 @@ public class WaypointPlacement : MonoBehaviour
 
             stopwatch.Start();
             Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startWorld, endWorld, bfsCancellationTokenSource.Token);
+            Debug.Log("BFS pathfinding completed in " + stopwatch.ElapsedMilliseconds + " ms");
             List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
             Debug.Log("BFS PATH COST: " + MetricsCalculation.getMetabolicPathCostFromArray(bfsPath));
             stopwatch.Stop();
-            Debug.Log($"BFS pathfinding completed in {stopwatch.ElapsedMilliseconds} ms");
 
             if (bfsPath != null && bfsPath.Count > 0)
             {

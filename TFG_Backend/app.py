@@ -47,6 +47,11 @@ class Terrain(BaseModel):
     rawFileBytes: bytes
     textureFiles: List[TextureFile]
 
+class Vector3(BaseModel):
+    x: float
+    y: float
+    z: float
+
 class TerrainLevel(BaseModel):
     name: str
     description: str
@@ -57,6 +62,13 @@ class TerrainLevel(BaseModel):
     end_Y: float
     end_Z: float
     creator: str
+    path: List[Vector3] = []
+    optimal_total3D_distance: float
+    optimal_total2D_distance: float
+    optimal_total_slope: float
+    optimal_total_positive_slope: float
+    optimal_total_negative_slope: float
+    optimal_metabolic_cost: float
 
 class LevelScore(BaseModel):
     level_uuid: str
@@ -223,6 +235,7 @@ async def download_terrain(terrain_uuid: str, db: sqlalchemy.orm.Session = Depen
 @app.post("/create-level/{terrain_uuid}")
 async def create_level(terrain_uuid: str, level: TerrainLevel, db: sqlalchemy.orm.Session = Depends(get_db)):
     from models import TerrainLevels as TerrainLevelModel
+    from models import OptimalPathPoint as OptimalPathPointModel
 
 
 
@@ -235,7 +248,13 @@ async def create_level(terrain_uuid: str, level: TerrainLevel, db: sqlalchemy.or
         start_Z=level.start_Z,
         end_X=level.end_X,
         end_Y=level.end_Y,
-        end_Z=level.end_Z
+        end_Z=level.end_Z,
+        optimal_total3D_distance=level.optimal_total3D_distance,
+        optimal_total2D_distance=level.optimal_total2D_distance,
+        optimal_total_slope=level.optimal_total_slope,
+        optimal_total_positive_slope=level.optimal_total_positive_slope,
+        optimal_total_negative_slope=level.optimal_total_negative_slope,
+        optimal_metabolic_cost=level.optimal_metabolic_cost
     )
     user = db.query(Users).filter(Users.name == level.creator).first()
     if not user:
@@ -244,7 +263,21 @@ async def create_level(terrain_uuid: str, level: TerrainLevel, db: sqlalchemy.or
 
     try:
         db.add(new_level)
+        db.flush()
+        db.refresh(new_level)
+        
+        for idx, point in enumerate(level.path):
+            new_point = OptimalPathPointModel(
+                level_uuid=new_level.uuid,
+                index=idx,
+                point_X=point.x,
+                point_Y=point.y,
+                point_Z=point.z
+            )
+            db.add(new_point)
+
         db.commit()
+
         return {
             "message": "Level created successfully",
             "statuscode": 200,

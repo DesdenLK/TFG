@@ -18,7 +18,7 @@ public class MetricsCalculation : MonoBehaviour
 
     private bool isTerrainLoaded = false;
 
-    struct Metrics
+    public struct Metrics
     {
         public float distance3D;
         public float distance2D;
@@ -42,6 +42,17 @@ public class MetricsCalculation : MonoBehaviour
         metrics.distance2D = totalDistance2D;
     }
 
+    public static void getTotalDistanceFromArray(List<Vector3> path, out float totalDistance3D, out float totalDistance2D)
+    {
+        totalDistance3D = 0;
+        totalDistance2D = 0;
+        for (int i = 0; i < path.Count - 1; i++)
+        {
+            totalDistance3D += Vector3.Distance(path[i], path[i + 1]);
+            totalDistance2D += Vector2.Distance(new Vector2(path[i].x, path[i].z), new Vector2(path[i + 1].x, path[i + 1].z));
+        }
+    }
+
     void getTotalSlope()
     {
         float totalSlope = 0;
@@ -62,6 +73,25 @@ public class MetricsCalculation : MonoBehaviour
         metrics.totalSlope = totalSlope;
         metrics.positiveSlope = positiveSlope;
         metrics.negativeSlope = negativeSlope;
+    }
+    
+    public static void getTotalSlopeFromArray(List<Vector3> path, out float totalSlope, out float positiveSlope, out float negativeSlope)
+    {
+        totalSlope = 0;
+        positiveSlope = 0;
+        negativeSlope = 0;
+        for (int i = 0; i < path.Count - 1; i++)
+        {
+            totalSlope += Mathf.Abs(path[i].y - path[i + 1].y);
+            if (path[i].y < path[i + 1].y)
+            {
+                positiveSlope += Mathf.Abs(path[i].y - path[i + 1].y);
+            }
+            else
+            {
+                negativeSlope += Mathf.Abs(path[i].y - path[i + 1].y);
+            }
+        }
     }
 
     void getMetabolicPathCost()
@@ -123,6 +153,15 @@ public class MetricsCalculation : MonoBehaviour
         positiveSlope_text.text = metrics.positiveSlope.ToString();
         negativeSlope_text.text = metrics.negativeSlope.ToString();
         metabolicPathCost_text.text = metrics.metabolicPathCost.ToString();
+    }
+
+    public static Metrics getAllMetricsFromArray(List<Vector3> path)
+    {
+        Metrics metrics = new Metrics();
+        getTotalDistanceFromArray(path, out metrics.distance3D, out metrics.distance2D);
+        getTotalSlopeFromArray(path, out metrics.totalSlope, out metrics.positiveSlope, out metrics.negativeSlope);
+        metrics.metabolicPathCost = getMetabolicPathCostFromArray(path);
+        return metrics;
     }
 
     private void Update()

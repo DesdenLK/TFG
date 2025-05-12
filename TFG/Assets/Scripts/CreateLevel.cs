@@ -4,7 +4,29 @@ using UnityEngine.UI;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json;
 using UnityEngine.SceneManagement;
+using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
+using System.Threading;
+using System;
+using System.IO;
 
+
+[System.Serializable]
+public class Vector3Data
+{
+    public float x;
+    public float y;
+    public float z;
+
+    public Vector3Data(Vector3 vector)
+    {
+        x = vector.x;
+        y = vector.y;
+        z = vector.z;
+    }
+}
+
+[System.Serializable]
 public class LevelRequest
 {
     public string name;
@@ -16,6 +38,13 @@ public class LevelRequest
     public float end_Y;
     public float end_Z;
     public string creator;
+    public List<Vector3Data> path;
+    public float optimal_total3D_distance;
+    public float optimal_total2D_distance;
+    public float optimal_total_slope;
+    public float optimal_total_positive_slope;
+    public float optimal_total_negative_slope;
+    public float optimal_metabolic_cost;
 }
 
 public class CreateLevel : MonoBehaviour
@@ -32,6 +61,7 @@ public class CreateLevel : MonoBehaviour
     public Button returnToLevelMenu;
     public Button returnToMainMenu;
     public Button returnToTerrainMenu;
+    public GameObject optimalPathPanel;
     public GameObject responsePanel;
 
 
@@ -40,10 +70,17 @@ public class CreateLevel : MonoBehaviour
 
     private bool isPlacingStart = false;
     private bool isPlacingEnd = false;
+    private bool computedBFS = false;
+    private bool bfsReturned = false;
+    private bool sendPost = false;
+    private bool creatingLevel = false;
 
     public Terrain terrain;
 
     private Requests requestHandler;
+    private CancellationTokenSource bfsCancellationTokenSource;
+    private PathFinder pathFinder;
+    private List<Vector3> bfsPath;
 
     void Start()
     {
@@ -64,6 +101,53 @@ public class CreateLevel : MonoBehaviour
         isPlacingStart = false;
         placeStartButton.interactable = true;
         placeEndButton.interactable = false;
+    }
+    async UniTaskVoid RunBFSPathFIndingAsync()
+    {
+        if (waypointStart == null || waypointEnd == null || computedBFS) return;
+
+        bfsCancellationTokenSource?.Cancel();
+        bfsCancellationTokenSource?.Dispose();
+        bfsCancellationTokenSource = new CancellationTokenSource();
+
+        computedBFS = true;
+        try
+        {
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+            TerrainLoader terrainLoader = GetComponent<TerrainLoader>();
+            pathFinder = new PathFinder(terrain, terrainLoader);
+            Debug.Log("Starting BFS pathfinding");
+            Vector2Int startGrid = pathFinder.WorldToGrid(waypointStart.transform.position);
+            Vector2Int endGrid = pathFinder.WorldToGrid(waypointEnd.transform.position);
+            Vector3 startWorld = waypointStart.transform.position;
+            Vector3 endWorld = waypointEnd.transform.position;
+
+            stopwatch.Start();
+            Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startWorld, endWorld, bfsCancellationTokenSource.Token);
+            bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
+            Debug.Log("BFS PATH COST: " + MetricsCalculation.getMetabolicPathCostFromArray(bfsPath));
+            stopwatch.Stop();
+            Debug.Log($"BFS pathfinding completed in {stopwatch.ElapsedMilliseconds} ms");
+
+            if (bfsPath != null && bfsPath.Count > 0)
+            {
+                Debug.Log("BFS path found");
+            }
+            else
+            {
+                bfsPath = new List<Vector3>();
+                Debug.Log("No BFS path found");
+            }
+            bfsReturned = true;
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.Log("Pathfinding was canceled");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Pathfinding error: {ex.Message}");
+        }
     }
 
     private void UpdatePoints()
@@ -103,9 +187,28 @@ public class CreateLevel : MonoBehaviour
 
     public void onCreateLevelClick()
     {
+        creatingLevel = true;
         placeStartButton.interactable = false;
         placeEndButton.interactable = false;
         createLevelButton.interactable = false;
+        optimalPathPanel.SetActive(true);
+        if (!computedBFS)
+        {
+            RunBFSPathFIndingAsync().Forget();
+        }
+    }
+
+
+    private void sendNewLevelPost()
+    {
+        sendPost = true;
+        List<Vector3Data> pathData = new List<Vector3Data>();
+        MetricsCalculation.Metrics metrics = MetricsCalculation.getAllMetricsFromArray(bfsPath);
+        foreach (var point in bfsPath)
+        {
+            pathData.Add(new Vector3Data(point));
+        }
+
         LevelRequest levelRequest = new LevelRequest
         {
             name = levelName.text,
@@ -116,8 +219,16 @@ public class CreateLevel : MonoBehaviour
             end_X = waypointEnd.transform.position.x,
             end_Y = waypointEnd.transform.position.y,
             end_Z = waypointEnd.transform.position.z,
-            creator = PlayerPrefs.GetString("username", "Guest")
+            creator = PlayerPrefs.GetString("username", "Guest"),
+            path = pathData,
+            optimal_total3D_distance = metrics.distance3D,
+            optimal_total2D_distance = metrics.distance2D,
+            optimal_total_slope = metrics.totalSlope,
+            optimal_total_positive_slope = metrics.positiveSlope,
+            optimal_total_negative_slope = metrics.negativeSlope,
+            optimal_metabolic_cost = metrics.metabolicPathCost,
         };
+        Debug.Log("LevelRequest: " + levelRequest.name + " " + levelRequest.description + " " + levelRequest.start_X + " " + levelRequest.start_Y + " " + levelRequest.start_Z + " " + levelRequest.end_X + " " + levelRequest.end_Y + " " + levelRequest.end_Z + " " + levelRequest.path);
         string json = JsonConvert.SerializeObject(levelRequest);
         StartCoroutine(requestHandler.PostRequest("/create-level/" + PlayerPrefs.GetString("TerrainUUID"), json, OnCreateLevelResponse));
     }
@@ -129,6 +240,7 @@ public class CreateLevel : MonoBehaviour
 
     private void OnCreateLevelResponse(string response)
     {
+        optimalPathPanel.SetActive(false);
         responsePanel.SetActive(true);
         if (response.Contains("ERROR"))
         {
@@ -160,13 +272,17 @@ public class CreateLevel : MonoBehaviour
 
     void Update()
     {
-        if (waypointStart != null && waypointEnd != null && levelName.text != "" && levelDescription.text != "")
+        if (waypointStart != null && waypointEnd != null && levelName.text != "" && levelDescription.text != "" && !creatingLevel)
         {
             createLevelButton.interactable = true;
         }
         else
         {
             createLevelButton.interactable = false;
+        }
+        if (bfsReturned && !sendPost)
+        {
+            sendNewLevelPost();
         }
         UpdatePoints();
     }
