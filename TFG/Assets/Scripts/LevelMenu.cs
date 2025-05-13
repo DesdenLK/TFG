@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
 using UnityEngine.SocialPlatforms.Impl;
+using System.Linq;
 
 public class LevelResponse
 {
@@ -61,6 +62,8 @@ public class LevelMenu : MonoBehaviour
     public GameObject scoreText;
     public Transform scoresList;
 
+    private List<LeaderboardGet> leadearboardList;
+
     void Start()
     {
         requestHandler = new Requests();
@@ -115,6 +118,7 @@ public class LevelMenu : MonoBehaviour
     private void OnGetLeaderboard(string json)
     {
         LeaderboardResponse leaderboardResponse = JsonConvert.DeserializeObject<LeaderboardResponse>(json);
+        leadearboardList = leaderboardResponse.scores;
         if (leaderboardResponse.statuscode == 200)
         {
             foreach (LeaderboardGet score in leaderboardResponse.scores)
@@ -134,6 +138,63 @@ public class LevelMenu : MonoBehaviour
             Debug.LogError("Failed to load leaderboard: " + leaderboardResponse.message);
         }
         leaderboardPanel.transform.Find("Back Button").GetComponent<Button>().interactable = true;
+    }
+
+    public void onMetabolicCostSort()
+    {
+        List<LeaderboardGet> sortedList = leadearboardList.OrderBy(x => x.metabolic_cost).ToList();
+        scoresList.DestroyChildren();
+        createScoreList(sortedList);
+    }
+
+    public void on2DDistanceSort()
+    {
+        List<LeaderboardGet> sortedList = leadearboardList.OrderBy(x => x.total2D_distance).ToList();
+        scoresList.DestroyChildren();
+        createScoreList(sortedList);
+    }
+
+    public void on3DDistanceSort()
+    {
+        List<LeaderboardGet> sortedList = leadearboardList.OrderBy(x => x.total3D_distance).ToList();
+        scoresList.DestroyChildren();
+        createScoreList(sortedList);
+    }
+
+    public void onTotalSlopeSort()
+    {
+        List<LeaderboardGet> sortedList = leadearboardList.OrderBy(x => x.total_slope).ToList();
+        scoresList.DestroyChildren();
+        createScoreList(sortedList);
+    }
+
+    public void onTotalPositiveSlopeSort()
+    {
+        List<LeaderboardGet> sortedList = leadearboardList.OrderBy(x => x.total_positive_slope).ToList();
+        scoresList.DestroyChildren();
+        createScoreList(sortedList);
+    }
+
+    public void onTotalNegativeSlopeSort()
+    {
+        List<LeaderboardGet> sortedList = leadearboardList.OrderBy(x => x.total_negative_slope).ToList();
+        scoresList.DestroyChildren();
+        createScoreList(sortedList);
+    }
+
+    private void createScoreList(List<LeaderboardGet> scoreList)
+    {
+        foreach (LeaderboardGet score in scoreList)
+        {
+            GameObject scores = Instantiate(scoreText, scoresList);
+            scores.transform.Find("User").GetComponent<Text>().text = score.user;
+            scores.transform.Find("Metabolic_Cost").GetComponent<Text>().text = score.metabolic_cost.ToString();
+            scores.transform.Find("2D_Distance").GetComponent<Text>().text = score.total2D_distance.ToString();
+            scores.transform.Find("3D_Distance").GetComponent<Text>().text = score.total3D_distance.ToString();
+            scores.transform.Find("Total Slope").GetComponent<Text>().text = score.total_slope.ToString();
+            scores.transform.Find("Total Positive Slope").GetComponent<Text>().text = score.total_positive_slope.ToString();
+            scores.transform.Find("Total Negative Slope").GetComponent<Text>().text = score.total_negative_slope.ToString();
+        }
     }
 
     public void onCloseLeaderboardClick()
