@@ -193,6 +193,8 @@ public class TerrainLoader : MonoBehaviour
 
     public void onBackButton()
     {
+        WaypointStorage.waypointStart = Vector3.negativeInfinity;
+        WaypointStorage.waypointEnd = Vector3.negativeInfinity;
         SceneManager.LoadScene(PlayerPrefs.GetString("PreviousScene", "MainMenu"));
     }
 }

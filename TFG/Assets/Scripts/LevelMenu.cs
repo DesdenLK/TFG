@@ -45,6 +45,12 @@ public class LevelsGet
     public float end_X;
     public float end_Y;
     public float end_Z;
+    public float optimal_total3D_distance;
+    public float optimal_total2D_distance;
+    public float optimal_total_slope;
+    public float optimal_total_positive_slope;
+    public float optimal_total_negative_slope;
+    public float optimal_metabolic_cost;
     public string creator;
     public string creator_uuid;
     public string datetime;
@@ -206,6 +212,13 @@ public class LevelMenu : MonoBehaviour
 
     public void onPlayButton()
     {
+        OptimalPathStorage.optimalTotal3DDistance = levelSelected.optimal_total3D_distance;
+        OptimalPathStorage.optimalTotal2DDistance = levelSelected.optimal_total2D_distance;
+        OptimalPathStorage.optimalTotalSlope = levelSelected.optimal_total_slope;
+        OptimalPathStorage.optimalTotalPositiveSlope = levelSelected.optimal_total_positive_slope;
+        OptimalPathStorage.optimalTotalNegativeSlope = levelSelected.optimal_total_negative_slope;
+        OptimalPathStorage.optimalMetabolicCost = levelSelected.optimal_metabolic_cost;
+
         PlayerPrefs.SetString("PreviousScene", "LevelSelector");
         PlayerPrefs.SetString("LevelUUID", levelSelected.uuid);
         WaypointStorage.waypointStart = new Vector3(levelSelected.start_X, levelSelected.start_Y, levelSelected.start_Z);

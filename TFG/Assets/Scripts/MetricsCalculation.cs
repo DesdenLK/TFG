@@ -103,6 +103,7 @@ public class MetricsCalculation : MonoBehaviour
             Vector2 start = new Vector2(lineRenderer.GetPosition(i).x, lineRenderer.GetPosition(i).z);
             Vector2 end = new Vector2(lineRenderer.GetPosition(i + 1).x, lineRenderer.GetPosition(i + 1).z);
             float planarDistance = Vector2.Distance(start, end);
+            if (planarDistance < 0.001f) continue;
             float verticalDistance = Mathf.Abs(lineRenderer.GetPosition(i).y - lineRenderer.GetPosition(i + 1).y);
             float averageSlope = verticalDistance / planarDistance;
 
@@ -121,6 +122,7 @@ public class MetricsCalculation : MonoBehaviour
             Vector2 start = new Vector2(path[i].x, path[i].z);
             Vector2 end = new Vector2(path[i + 1].x, path[i + 1].z);
             float planarDistance = Vector2.Distance(start, end);
+            if (planarDistance < 0.001f) continue;
             float verticalDistance = Mathf.Abs(path[i].y - path[i + 1].y);
             float averageSlope = verticalDistance / planarDistance;
             float factor1 = 1 + 7.92f * averageSlope;

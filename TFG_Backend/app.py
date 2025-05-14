@@ -317,6 +317,12 @@ async def get_levels(terrain_uuid: str, db: sqlalchemy.orm.Session = Depends(get
                 "end_X": level.end_X,
                 "end_Y": level.end_Y,
                 "end_Z": level.end_Z,
+                "optimal_total3D_distance": level.optimal_total3D_distance,
+                "optimal_total2D_distance": level.optimal_total2D_distance,
+                "optimal_total_slope": level.optimal_total_slope,
+                "optimal_total_positive_slope": level.optimal_total_positive_slope,
+                "optimal_total_negative_slope": level.optimal_total_negative_slope,
+                "optimal_metabolic_cost": level.optimal_metabolic_cost,
                 "creator": creator_dict.get(level.creator, "Unknown"),
                 "creator_uuid": level.creator,
                 "created_at": level.created_at.strftime("%Y-%m-%d %H:%M:%S") if level.created_at else None
