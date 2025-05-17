@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class FirstPersonController : MonoBehaviour
 {
@@ -12,32 +13,41 @@ public class FirstPersonController : MonoBehaviour
     private Transform cam;
     private float verticalLookRotation = 0f;
 
-    private Vector3 velocity;
+    public Vector3 velocity;
     private bool isGrounded;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
         cam = Camera.main.transform;
-
-        cam.SetParent(transform);
-        cam.localPosition = new Vector3(0f, 1.6f, 0f); // altura de los ojos
+        controller.enabled = true;
     }
 
     void Update()
     {
-        // Detectar si estamos en el suelo
-        isGrounded = controller.isGrounded;
-
-        if (isGrounded && velocity.y < 0)
+        if (EventSystem.current != null &&
+        EventSystem.current.currentSelectedGameObject != null &&
+        (EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.InputField>() != null ||
+        EventSystem.current.currentSelectedGameObject.GetComponent<TMPro.TMP_InputField>() != null))
         {
-            velocity.y = -2f; // Pequeño valor negativo para mantenernos en el suelo
+            return;
+        }
+        if (!controller.enabled)
+        {
+            velocity = Vector3.zero;
         }
 
-        // Movimiento horizontal
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
-        Vector3 move = transform.right * x + transform.forward * z;
+        // Comprobar si el jugador está en el suelo
+        isGrounded = Physics.CheckSphere(transform.position, groundCheckDistance, groundMask);
+        if (isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+        }
+
+        // Movimiento del jugador
+        float moveX = Input.GetAxis("Horizontal");
+        float moveZ = Input.GetAxis("Vertical");
+        Vector3 move = transform.right * moveX + transform.forward * moveZ;
         controller.Move(move * speed * Time.deltaTime);
 
         // Aplicar gravedad

@@ -14,6 +14,7 @@ public class WaypointPlacement : MonoBehaviour
     public Button placeStartButton;
     public Button placeEndButton;
     public Button computeOptimalButton;
+    public Button finishDrawing;
 
 
     public LineRenderer lineRenderer;
@@ -33,6 +34,7 @@ public class WaypointPlacement : MonoBehaviour
 
     private bool computedBFS = false;
     private bool executingBFS = false;
+
 
     private PathFinder pathFinder;
     private GameObject bfsLineRenderer;
@@ -96,6 +98,7 @@ public class WaypointPlacement : MonoBehaviour
                     isPlacingStart = false;
                     placeStartButton.interactable = true;
                     resetLine();
+                    Debug.Log("Waypoint start placed at: " + waypointStart.transform.position);
 
                 }
                 else
@@ -109,6 +112,7 @@ public class WaypointPlacement : MonoBehaviour
                     isPlacingEnd = false;
                     placeEndButton.interactable = true;
                     resetLine();
+                    Debug.Log("Waypoint end placed at: " + waypointEnd.transform.position);
                 }
             }
         }
@@ -124,49 +128,64 @@ public class WaypointPlacement : MonoBehaviour
             startAddedLine = true;
         }
 
-        if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson && canDraw)
+        switch (cameraModeManager.currentMode)
         {
-            Vector3 currentPos = Camera.main.transform.position;
-            if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], currentPos) > minDistance)
-            {
-                waypoints.Add(currentPos);
-                lineRenderer.positionCount = waypoints.Count;
-                lineRenderer.SetPositions(waypoints.ToArray());
-            }
-        }
-        else { 
-            if (canDraw && Input.GetMouseButtonDown(0))
-            {
-                if (EventSystem.current.IsPointerOverGameObject())
-                    return;
-                isDrawing = true;
-            }
-            if (isDrawing && Input.GetMouseButton(0))
-            {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
-                if (Physics.Raycast(ray, out hit))
+            case CameraModeManager.Mode.FirstPerson:
+                if (canDraw)
                 {
-                    if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance)
+                    Vector3 currentPos = Camera.main.transform.position;
+                    if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], currentPos) > minDistance)
                     {
-                        waypoints.Add(hit.point);
+                        waypoints.Add(currentPos - new Vector3(0, 0.7f, 0));
                         lineRenderer.positionCount = waypoints.Count;
                         lineRenderer.SetPositions(waypoints.ToArray());
                     }
                 }
-            }
-            if (isDrawing && Input.GetMouseButtonUp(0))
-            {
-                isDrawing = false;
-            }
+                break;
+            case CameraModeManager.Mode.ThirdPerson:
+                if (canDraw && Input.GetMouseButtonDown(0))
+                {
+                    if (EventSystem.current.IsPointerOverGameObject())
+                        return;
+                    isDrawing = true;
+                }
+                if (isDrawing && Input.GetMouseButton(0))
+                {
+                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                    RaycastHit hit;
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance)
+                        {
+                            waypoints.Add(hit.point + new Vector3(0, 0.1f,0));
+                            lineRenderer.positionCount = waypoints.Count;
+                            lineRenderer.SetPositions(waypoints.ToArray());
+                            Debug.Log("Adding point: " + hit.point);
+                        }
+                    }
+                }
+                if (isDrawing && Input.GetMouseButtonUp(0))
+                {
+                    isDrawing = false;
+                }
+                break;
         }
     }
 
     public void updateToggleInput()
     {
         canDraw = !canDraw;
-        Debug.Log("Can draw: " + canDraw);
-        if (!canDraw)
+
+        if (canDraw && cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson)
+        {
+            cameraModeManager.SwitchMode(CameraModeManager.Mode.FirstPerson, waypoints[waypoints.Count - 1]);
+        }
+    }
+
+
+    public void onFinishDrawing()
+    {
+        if (!canDraw && waypoints[waypoints.Count - 1] != waypointEnd.transform.position)
         {
             waypoints.Add(waypointEnd.transform.position);
             lineRenderer.positionCount = waypoints.Count;
@@ -193,8 +212,8 @@ public class WaypointPlacement : MonoBehaviour
         }
         else
         {
-            lineRenderer.startWidth = 0.1f;
-            lineRenderer.endWidth = 0.1f;
+            lineRenderer.startWidth = 0.5f;
+            lineRenderer.endWidth = 0.5f;
         }
         lineRenderer.startColor = Color.red;
         lineRenderer.endColor = Color.red;
@@ -202,7 +221,6 @@ public class WaypointPlacement : MonoBehaviour
         lineRenderer.useWorldSpace = true;
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
     }
-
     private void OnDestroy()
     {
         bfsCancellationTokenSource?.Cancel();
@@ -235,6 +253,7 @@ public class WaypointPlacement : MonoBehaviour
             Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startWorld, endWorld, bfsCancellationTokenSource.Token);
             Debug.Log("BFS pathfinding completed in " + stopwatch.ElapsedMilliseconds + " ms");
             List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
+            Debug.Log("Start: " + bfsPath[0]);
             Debug.Log("BFS PATH COST: " + MetricsCalculation.getMetabolicPathCostFromArray(bfsPath));
             stopwatch.Stop();
             executingBFS = false;
@@ -270,21 +289,35 @@ public class WaypointPlacement : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            cameraModeManager.SwitchMode(CameraModeManager.Mode.ThirdPerson, Vector3.zero);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2) && waypointStart != null && waypointEnd != null)
+        {
+            cameraModeManager.SwitchMode(CameraModeManager.Mode.FirstPerson, waypoints[waypoints.Count - 1]);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+
         if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson && currentCameraMode != 1)
         {
             currentCameraMode = 1;
             placeStartButton.interactable = false;
             placeEndButton.interactable = false;
-            lineRenderer.startWidth = 0.1f;
-            lineRenderer.endWidth = 0.1f;
+            lineRenderer.startWidth = 0.5f;
+            lineRenderer.endWidth = 0.5f;
 
             if (bfsLineRenderer != null)
             {
                 LineRenderer bfsLineRendererComponent = bfsLineRenderer.GetComponent<LineRenderer>();
                 if (bfsLineRendererComponent != null)
                 {
-                    bfsLineRendererComponent.startWidth = 0.1f;
-                    bfsLineRendererComponent.endWidth = 0.1f;
+                    bfsLineRendererComponent.startWidth = 0.5f;
+                    bfsLineRendererComponent.endWidth = 0.5f;
                 }
 
             }
@@ -321,7 +354,13 @@ public class WaypointPlacement : MonoBehaviour
         UpdatePoints();
         if (waypointEnd != null && waypointStart != null)
         {
+            if (!canDraw) finishDrawing.interactable = true;
+            else finishDrawing.interactable = false;
             UpdateLine();
-        } 
+        }
+        else
+        {
+            finishDrawing.interactable = false;
+        }
     }
 }
