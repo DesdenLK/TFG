@@ -354,12 +354,15 @@ public class WaypointPlacement : MonoBehaviour
         UpdatePoints();
         if (waypointEnd != null && waypointStart != null)
         {
-            if (!canDraw) finishDrawing.interactable = true;
+            if (!executingBFS) computeOptimalButton.interactable = true;
+            else computeOptimalButton.interactable = false;
+            if (!canDraw && waypoints.Count > 0 && Vector3.Distance(waypointEnd.transform.position, waypoints[waypoints.Count - 1]) < 200) finishDrawing.interactable = true;
             else finishDrawing.interactable = false;
             UpdateLine();
         }
         else
         {
+            computeOptimalButton.interactable = false;
             finishDrawing.interactable = false;
         }
     }

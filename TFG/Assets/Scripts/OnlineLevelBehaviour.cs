@@ -21,6 +21,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
 {
     public GameObject waypointPrefab;
     public GameObject flagPrefab;
+    public Button finishDrawing;
 
     public LineRenderer lineRenderer;
     public float minDistance = 0.1f;
@@ -43,6 +44,17 @@ public class OnlineLevelBehaviour : MonoBehaviour
     public GameObject buttonPanel;
     public GameObject scoreComparisonPanel;
 
+    private CameraModeManager cameraModeManager;
+    private int currentCameraMode = 0;
+
+    private void Start()
+    {
+        requestHandler = new Requests();
+        waypointStart = Instantiate(waypointPrefab, WaypointStorage.waypointStart, Quaternion.identity);
+        waypointEnd = Instantiate(flagPrefab, WaypointStorage.waypointEnd, Quaternion.identity);
+        cameraModeManager = GetComponent<CameraModeManager>();
+    }
+
     private void UpdateLine()
     {
         if (!startAddedLine)
@@ -53,40 +65,57 @@ public class OnlineLevelBehaviour : MonoBehaviour
             startAddedLine = true;
         }
 
-        if (canDraw && Input.GetMouseButtonDown(0))
+        switch (cameraModeManager.currentMode)
         {
-            if (EventSystem.current.IsPointerOverGameObject())
-                return;
-            isDrawing = true;
-        }
-        if (isDrawing && Input.GetMouseButton(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance)
+            case CameraModeManager.Mode.FirstPerson:
+                if (canDraw)
                 {
-                    waypoints.Add(hit.point);
-                    lineRenderer.positionCount = waypoints.Count;
-                    lineRenderer.SetPositions(waypoints.ToArray());
+                    Vector3 currentPos = Camera.main.transform.position;
+                    if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], currentPos) > minDistance)
+                    {
+                        waypoints.Add(currentPos - new Vector3(0, 0.7f, 0));
+                        lineRenderer.positionCount = waypoints.Count;
+                        lineRenderer.SetPositions(waypoints.ToArray());
+                    }
                 }
-            }
-        }
-        if (isDrawing && Input.GetMouseButtonUp(0))
-        {
-            isDrawing = false;
+                break;
+            case CameraModeManager.Mode.ThirdPerson:
+                if (canDraw && Input.GetMouseButtonDown(0))
+                {
+                    if (EventSystem.current.IsPointerOverGameObject())
+                        return;
+                    isDrawing = true;
+                }
+                if (isDrawing && Input.GetMouseButton(0))
+                {
+                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                    RaycastHit hit;
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance)
+                        {
+                            waypoints.Add(hit.point + new Vector3(0, 0.1f, 0));
+                            lineRenderer.positionCount = waypoints.Count;
+                            lineRenderer.SetPositions(waypoints.ToArray());
+                            Debug.Log("Adding point: " + hit.point);
+                        }
+                    }
+                }
+                if (isDrawing && Input.GetMouseButtonUp(0))
+                {
+                    isDrawing = false;
+                }
+                break;
         }
     }
 
     public void updateToggleInput()
     {
         canDraw = !canDraw;
-        if (!canDraw)
+
+        if (canDraw && cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson)
         {
-            waypoints.Add(waypointEnd.transform.position);
-            lineRenderer.positionCount = waypoints.Count;
-            lineRenderer.SetPositions(waypoints.ToArray());
+            cameraModeManager.SwitchMode(CameraModeManager.Mode.FirstPerson, waypoints[waypoints.Count - 1]);
         }
     }
 
@@ -178,6 +207,16 @@ public class OnlineLevelBehaviour : MonoBehaviour
         SceneManager.LoadScene("TerrainSelector");
     }
 
+    public void onFinishDrawing()
+    {
+        if (!canDraw && waypoints[waypoints.Count - 1] != waypointEnd.transform.position)
+        {
+            waypoints.Add(waypointEnd.transform.position);
+            lineRenderer.positionCount = waypoints.Count;
+            lineRenderer.SetPositions(waypoints.ToArray());
+        }
+    }
+
     public void onMainMenuClick()
     {
         savedScorePanel.SetActive(false);
@@ -203,17 +242,41 @@ public class OnlineLevelBehaviour : MonoBehaviour
         startAddedLine = false;
     }
 
-    void Start()
-    {
-        requestHandler = new Requests();
-        waypointStart = Instantiate(waypointPrefab, WaypointStorage.waypointStart, Quaternion.identity);
-        waypointEnd = Instantiate(flagPrefab, WaypointStorage.waypointEnd, Quaternion.identity);
-    }
-
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            cameraModeManager.SwitchMode(CameraModeManager.Mode.ThirdPerson, Vector3.zero);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2) && waypointStart != null && waypointEnd != null)
+        {
+            cameraModeManager.SwitchMode(CameraModeManager.Mode.FirstPerson, waypoints[waypoints.Count - 1]);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson && currentCameraMode != 1)
+        {
+            currentCameraMode = 1;
+            lineRenderer.startWidth = 0.5f;
+            lineRenderer.endWidth = 0.5f;
+        }
+        else if (cameraModeManager.currentMode == CameraModeManager.Mode.ThirdPerson && currentCameraMode != 0)
+        {
+            currentCameraMode = 0;
+            lineRenderer.startWidth = 50.0f;
+            lineRenderer.endWidth = 50.0f;
+        }
+
+
+
         if (waypointEnd != null && waypointStart != null)
         {
+            if (!canDraw && waypoints.Count > 0 && Vector3.Distance(waypointEnd.transform.position, waypoints[waypoints.Count - 1]) < 200) finishDrawing.interactable = true;
+            else finishDrawing.interactable = false;
+
             if (canDraw || (lineRenderer.positionCount > 0 && lineRenderer.GetPosition(lineRenderer.positionCount - 1) != waypointEnd.transform.position))
             {
                 saveScore.interactable = false;

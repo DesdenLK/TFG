@@ -15,12 +15,6 @@ public class MinimapIcons : MonoBehaviour
 
     void Start()
     {
-        if (!minimapCamera || !playerIcon || !minimapRect)
-        {
-            Debug.LogError("MinimapCamera, PlayerIcon or MinimapRect not assigned.");
-            return;
-        }
-        // Asignar los puntos inicial y final (puedes hacerlo desde el inspector o en otro lugar)
         startPoint = WaypointStorage.waypointStart;
         endPoint = WaypointStorage.waypointEnd;
     }
