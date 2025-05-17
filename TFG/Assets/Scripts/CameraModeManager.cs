@@ -9,6 +9,8 @@ public class CameraModeManager : MonoBehaviour
     public enum Mode { ThirdPerson, FirstPerson, VR }
     public Mode currentMode = Mode.ThirdPerson;
 
+    public GameObject miniMappanel;
+
     void Start()
     {
         SwitchMode(currentMode, Vector3.zero);
@@ -26,7 +28,7 @@ public class CameraModeManager : MonoBehaviour
         if (mode == Mode.FirstPerson)
         {
 
-
+            miniMappanel.SetActive(true);
             Vector3 endPos = WaypointStorage.waypointEnd;
 
             // Posiciona al jugador en el inicio
@@ -50,6 +52,11 @@ public class CameraModeManager : MonoBehaviour
 
             // Activa el controlador de personaje
             firstPersonPlayer.GetComponent<CharacterController>().enabled = true;
+        }
+
+        if (mode == Mode.ThirdPerson)
+        {
+            miniMappanel.SetActive(false);
         }
 
     }
