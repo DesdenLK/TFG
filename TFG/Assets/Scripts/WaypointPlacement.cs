@@ -142,6 +142,18 @@ public class WaypointPlacement : MonoBehaviour
                     }
                 }
                 break;
+            case CameraModeManager.Mode.VR:
+                if (canDraw)
+                {
+                    Vector3 currentPos = Camera.main.transform.position;
+                    if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], currentPos) > minDistance)
+                    {
+                        waypoints.Add(currentPos - new Vector3(0, 1.4f, 0));
+                        lineRenderer.positionCount = waypoints.Count;
+                        lineRenderer.SetPositions(waypoints.ToArray());
+                    }
+                }
+                break;
             case CameraModeManager.Mode.ThirdPerson:
                 if (canDraw && Input.GetMouseButtonDown(0))
                 {
@@ -179,6 +191,11 @@ public class WaypointPlacement : MonoBehaviour
         if (canDraw && cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson)
         {
             cameraModeManager.SwitchMode(CameraModeManager.Mode.FirstPerson, waypoints[waypoints.Count - 1]);
+        }
+
+        if (canDraw && cameraModeManager.currentMode == CameraModeManager.Mode.VR)
+        {
+            cameraModeManager.SwitchMode(CameraModeManager.Mode.VR, waypoints[waypoints.Count - 1]);
         }
     }
 
@@ -301,6 +318,12 @@ public class WaypointPlacement : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
+        if (Input.GetKeyDown(KeyCode.Alpha3) && waypointStart != null && waypointEnd != null)
+        {
+            cameraModeManager.SwitchMode(CameraModeManager.Mode.VR, waypoints[waypoints.Count - 1]);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
 
 
         if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson && currentCameraMode != 1)
@@ -341,6 +364,24 @@ public class WaypointPlacement : MonoBehaviour
             }
         }
 
+        else if (cameraModeManager.currentMode == CameraModeManager.Mode.VR && currentCameraMode != 2)
+        {
+            currentCameraMode = 2;
+            placeStartButton.interactable = false;
+            placeEndButton.interactable = false;
+            lineRenderer.startWidth = 0.5f;
+            lineRenderer.endWidth = 0.5f;
+            if (bfsLineRenderer != null)
+            {
+                LineRenderer bfsLineRendererComponent = bfsLineRenderer.GetComponent<LineRenderer>();
+                if (bfsLineRendererComponent != null)
+                {
+                    bfsLineRendererComponent.startWidth = 0.5f;
+                    bfsLineRendererComponent.endWidth = 0.5f;
+                }
+            }
+        }
+
         if (executingBFS)
         {
             placeStartButton.interactable = false;
@@ -348,8 +389,8 @@ public class WaypointPlacement : MonoBehaviour
         }
         else
         {
-            if (!isPlacingStart && currentCameraMode != 1) placeStartButton.interactable = true;
-            if (!isPlacingEnd && currentCameraMode != 1) placeEndButton.interactable = true;
+            if (!isPlacingStart && currentCameraMode == 0) placeStartButton.interactable = true;
+            if (!isPlacingEnd && currentCameraMode == 0) placeEndButton.interactable = true;
         }
         UpdatePoints();
         if (waypointEnd != null && waypointStart != null)

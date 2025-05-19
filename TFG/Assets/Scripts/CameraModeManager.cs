@@ -1,15 +1,21 @@
 using System;
+using System.Collections;
+using Unity.XR.CoreUtils;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Management;
 
 public class CameraModeManager : MonoBehaviour
 {
     public GameObject thirdPersonCamera; // Tu cámara aérea
     public GameObject firstPersonPlayer; // Prefab o escena
+    public GameObject vrPlayer;
 
     public enum Mode { ThirdPerson, FirstPerson, VR }
     public Mode currentMode = Mode.ThirdPerson;
 
     public GameObject miniMappanel;
+    private bool vrEnabled = false;
 
     void Start()
     {
@@ -25,8 +31,14 @@ public class CameraModeManager : MonoBehaviour
 
         firstPersonPlayer.SetActive(mode == Mode.FirstPerson);
 
+        vrPlayer.SetActive(mode == Mode.VR);
+
         if (mode == Mode.FirstPerson)
         {
+            if (vrEnabled)
+            {
+                StartCoroutine(DisableVR());
+            }
 
             miniMappanel.SetActive(true);
             Vector3 endPos = WaypointStorage.waypointEnd;
@@ -54,10 +66,89 @@ public class CameraModeManager : MonoBehaviour
             firstPersonPlayer.GetComponent<CharacterController>().enabled = true;
         }
 
+        if (mode == Mode.VR)
+        {
+            StartCoroutine(EnableVR());
+
+            miniMappanel.SetActive(true);
+            Vector3 endPos = WaypointStorage.waypointEnd;
+
+
+            // Posiciona al jugador VR en el inicio  
+            Debug.Log("Positioning VR player: " + pos);
+            var vrController = vrPlayer.GetComponent<CharacterController>();
+            vrController.enabled = false;
+
+            // Mover posición directamente  
+            vrPlayer.transform.position = pos + Vector3.up * 1.6f;
+            XROrigin origin = vrPlayer.GetComponent<XROrigin>();
+            if (origin != null)
+            {
+                Transform offsetTransform = origin.CameraFloorOffsetObject.transform;
+                Vector3 offsetPos = offsetTransform.localPosition;
+                offsetPos.y = 1.85f;
+                offsetTransform.localPosition = offsetPos;
+            }
+
+            // Opcional: haz que mire hacia el final  
+            Vector3 direction = (endPos - pos).normalized;
+            direction.y = 0; // Ignora inclinación si lo deseas  
+            if (direction != Vector3.zero)
+            {
+                vrPlayer.transform.rotation = Quaternion.LookRotation(direction);
+            }
+
+            // Activa el controlador de personaje  
+            vrPlayer.GetComponent<CharacterController>().enabled = true;
+   
+            
+
+        }
+
         if (mode == Mode.ThirdPerson)
         {
+            if (vrEnabled)
+            {
+                StartCoroutine(DisableVR());
+            }
             miniMappanel.SetActive(false);
         }
 
+    }
+
+    IEnumerator EnableVR()
+    {
+        if (vrEnabled)
+            yield break;
+
+        Debug.Log("Inicializando XR...");
+
+        // Inicia el proceso
+        yield return XRGeneralSettings.Instance.Manager.InitializeLoader();
+
+        // Espera hasta que se inicialice correctamente
+        while (XRGeneralSettings.Instance.Manager.activeLoader == null)
+        {
+            Debug.Log("Esperando a que se cargue el XR Loader...");
+            yield return null;
+        }
+
+        Debug.Log("Iniciando subsistemas XR...");
+        XRGeneralSettings.Instance.Manager.StartSubsystems();
+
+        vrPlayer.SetActive(true);
+        vrEnabled = true;
+
+        Debug.Log("VR habilitado correctamente.");
+    }
+
+
+    IEnumerator DisableVR()
+    {
+        Debug.Log("Desactivando VR...");
+        XRGeneralSettings.Instance.Manager.StopSubsystems();
+        XRGeneralSettings.Instance.Manager.DeinitializeLoader();
+        vrEnabled = false;
+        yield return null;
     }
 }

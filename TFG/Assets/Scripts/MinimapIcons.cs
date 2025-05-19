@@ -3,20 +3,52 @@ using UnityEngine;
 public class MinimapIcons : MonoBehaviour
 {
     public Camera minimapCamera;         
-    public Transform player;             
+    private Transform player;
+
+    public Transform vrPlayer;
+    public Transform firstPersonPlayer;
     public RectTransform playerIcon;     
     public RectTransform startIcon;      
     public RectTransform endIcon;        
     private Vector3 startPoint;         
     private Vector3 endPoint;           
 
-    public RectTransform minimapRect;    
+    public RectTransform minimapRect; 
+    public CameraModeManager cameraModeManager;
 
 
     void Start()
     {
+        if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson)
+        {
+            player = firstPersonPlayer;
+        }
+        else if (cameraModeManager.currentMode == CameraModeManager.Mode.VR)
+        {
+            player = vrPlayer;
+        }
+        else
+        {
+            player = firstPersonPlayer;
+        }
         startPoint = WaypointStorage.waypointStart;
         endPoint = WaypointStorage.waypointEnd;
+    }
+
+    void Update()
+    {
+        if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson)
+        {
+            player = firstPersonPlayer;
+        }
+        else if (cameraModeManager.currentMode == CameraModeManager.Mode.VR)
+        {
+            player = vrPlayer;
+        }
+        else
+        {
+            player = firstPersonPlayer;
+        }
     }
 
     void LateUpdate()
