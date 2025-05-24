@@ -168,11 +168,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minimapCamera: {fileID: 0}
-  player: {fileID: 0}
+  vrPlayer: {fileID: 0}
+  firstPersonPlayer: {fileID: 0}
   playerIcon: {fileID: 8220418562591148034}
   startIcon: {fileID: 4112308284828893919}
   endIcon: {fileID: 9173510545458871433}
   minimapRect: {fileID: 1662599328567322247}
+  cameraModeManager: {fileID: 0}
 --- !u!223 &557972777377856761
 Canvas:
   m_ObjectHideFlags: 0

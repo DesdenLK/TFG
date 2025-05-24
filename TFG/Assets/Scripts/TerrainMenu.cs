@@ -96,11 +96,12 @@ public class TerrainMenu : MonoBehaviour
         requestHandler = new Requests();
         terrainList = new List<TerrainGet>();
         string username = PlayerPrefs.GetString("username", "Luca");
+        int online = PlayerPrefs.GetInt("isOnline", 0);
         if (username == "")
         {
             username = "Luca";
         }
-        string terrainsUrl = "/terrains/" + username;
+        string terrainsUrl = "/terrains/" + username + "/" + online;
         Debug.Log("Terrains URL: " + terrainsUrl);
         StartCoroutine(requestHandler.GetRequest(terrainsUrl, OnGetTerrains));
     }

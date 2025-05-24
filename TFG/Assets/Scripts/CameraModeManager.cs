@@ -137,6 +137,22 @@ public class CameraModeManager : MonoBehaviour
         XRGeneralSettings.Instance.Manager.StartSubsystems();
 
         vrPlayer.SetActive(true);
+        yield return null;
+
+        // Ahora puedes modificar el offset con más fiabilidad
+        XROrigin origin = vrPlayer.GetComponent<XROrigin>();
+        if (origin != null && origin.CameraFloorOffsetObject != null)
+        {
+            Vector3 offsetPos = origin.CameraFloorOffsetObject.transform.localPosition;
+            offsetPos.y = 1.85f;
+            origin.CameraFloorOffsetObject.transform.localPosition = offsetPos;
+
+            Debug.Log("Offset de cámara VR ajustado a: " + offsetPos.y);
+        }
+        else
+        {
+            Debug.LogWarning("No se encontró el CameraFloorOffsetObject.");
+        }
         vrEnabled = true;
 
         Debug.Log("VR habilitado correctamente.");

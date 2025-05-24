@@ -7759,6 +7759,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainObject: {fileID: 1082113503}
   dropdown: {fileID: 634032212}
+  cameraModeManager: {fileID: 2049570465}
 --- !u!4 &2049570461
 Transform:
   m_ObjectHideFlags: 0
@@ -8544,10 +8545,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4643046433517147484, guid: 8a0de6ea4acc9094bbcdbe2c6c743963, type: 3}
-      propertyPath: player
-      value: 
-      objectReference: {fileID: 89672863}
     - target: {fileID: 4643046433517147484, guid: 8a0de6ea4acc9094bbcdbe2c6c743963, type: 3}
       propertyPath: vrPlayer
       value: 

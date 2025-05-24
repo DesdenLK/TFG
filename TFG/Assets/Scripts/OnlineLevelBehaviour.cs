@@ -79,6 +79,18 @@ public class OnlineLevelBehaviour : MonoBehaviour
                     }
                 }
                 break;
+            case CameraModeManager.Mode.VR:
+                if (canDraw)
+                {
+                    Vector3 currentPos = Camera.main.transform.position;
+                    if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], currentPos) > minDistance)
+                    {
+                        waypoints.Add(currentPos - new Vector3(0, 1.4f, 0));
+                        lineRenderer.positionCount = waypoints.Count;
+                        lineRenderer.SetPositions(waypoints.ToArray());
+                    }
+                }
+                break;
             case CameraModeManager.Mode.ThirdPerson:
                 if (canDraw && Input.GetMouseButtonDown(0))
                 {
@@ -116,6 +128,11 @@ public class OnlineLevelBehaviour : MonoBehaviour
         if (canDraw && cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson)
         {
             cameraModeManager.SwitchMode(CameraModeManager.Mode.FirstPerson, waypoints[waypoints.Count - 1]);
+        }
+
+        if (canDraw && cameraModeManager.currentMode == CameraModeManager.Mode.VR)
+        {
+            cameraModeManager.SwitchMode(CameraModeManager.Mode.VR, waypoints[waypoints.Count - 1]);
         }
     }
 
@@ -203,6 +220,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
 
     public void onTerrainMenuClick()
     {
+        cameraModeManager.SwitchMode(CameraModeManager.Mode.ThirdPerson, Vector3.zero);
         savedScorePanel.SetActive(false);
         SceneManager.LoadScene("TerrainSelector");
     }
@@ -219,12 +237,14 @@ public class OnlineLevelBehaviour : MonoBehaviour
 
     public void onMainMenuClick()
     {
+        cameraModeManager.SwitchMode(CameraModeManager.Mode.ThirdPerson, Vector3.zero);
         savedScorePanel.SetActive(false);
         SceneManager.LoadScene("MainMenu");
     }
 
     public void onLevelMenuClick()
     {
+        cameraModeManager.SwitchMode(CameraModeManager.Mode.ThirdPerson, Vector3.zero);
         savedScorePanel.SetActive(false);
         SceneManager.LoadScene("LevelSelector");
     }
@@ -256,6 +276,12 @@ public class OnlineLevelBehaviour : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
+        if (Input.GetKeyDown(KeyCode.Alpha3) && waypointStart != null && waypointEnd != null)
+        {
+            cameraModeManager.SwitchMode(CameraModeManager.Mode.VR, waypoints[waypoints.Count - 1]);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
 
         if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson && currentCameraMode != 1)
         {
@@ -268,6 +294,12 @@ public class OnlineLevelBehaviour : MonoBehaviour
             currentCameraMode = 0;
             lineRenderer.startWidth = 50.0f;
             lineRenderer.endWidth = 50.0f;
+        }
+        else if (cameraModeManager.currentMode == CameraModeManager.Mode.VR && currentCameraMode != 2)
+        {
+            currentCameraMode = 2;
+            lineRenderer.startWidth = 0.5f;
+            lineRenderer.endWidth = 0.5f;
         }
 
 

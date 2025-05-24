@@ -167,18 +167,24 @@ async def new_terrain(terrain: Terrain, db: sqlalchemy.orm.Session = Depends(get
     finally:
         db.close()
 
-@app.get("/terrains/{username}")
-async def get_terrains(username: str, db: sqlalchemy.orm.Session = Depends(get_db)):
+@app.get("/terrains/{username}/{onlyPublic}")
+async def get_terrains(username: str, onlyPublic: bool, db: sqlalchemy.orm.Session = Depends(get_db)):
     from models import Terrains as TerrainModel
     
     user = db.query(Users).filter(Users.name == username).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    terrains = db.query(TerrainModel).filter(
-        or_(TerrainModel.creator == user.uuid, TerrainModel.isPublic == True)).all()
-    if not terrains:
-        terrains = []
+    if not onlyPublic:
+        terrains = db.query(TerrainModel).filter(
+            or_(TerrainModel.creator == user.uuid, TerrainModel.isPublic == True)).all()
+        if not terrains:
+            terrains = []
+    else:
+        terrains = db.query(TerrainModel).filter(
+            TerrainModel.isPublic == True).all()
+        if not terrains:
+            terrains = []
 
     return {
         "message": "Terrains retrieved successfully",

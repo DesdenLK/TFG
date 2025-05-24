@@ -21,6 +21,7 @@ public class TerrainLoader : MonoBehaviour
 
     public GameObject terrainObject;
     public Dropdown dropdown;
+    public CameraModeManager cameraModeManager;
     private Terrain terrain;
     private TerrainInfo terrainInfo;
     private TerrainLayer[] terrainLayers;
@@ -193,6 +194,7 @@ public class TerrainLoader : MonoBehaviour
 
     public void onBackButton()
     {
+        cameraModeManager.SwitchMode(CameraModeManager.Mode.ThirdPerson, Vector3.zero);
         WaypointStorage.waypointStart = Vector3.negativeInfinity;
         WaypointStorage.waypointEnd = Vector3.negativeInfinity;
         SceneManager.LoadScene(PlayerPrefs.GetString("PreviousScene", "MainMenu"));
