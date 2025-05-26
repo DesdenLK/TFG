@@ -167,12 +167,11 @@ public class WaypointPlacement : MonoBehaviour
                     RaycastHit hit;
                     if (Physics.Raycast(ray, out hit))
                     {
-                        if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance)
+                        if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance && Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) < 50)
                         {
                             waypoints.Add(hit.point + new Vector3(0, 0.1f,0));
                             lineRenderer.positionCount = waypoints.Count;
                             lineRenderer.SetPositions(waypoints.ToArray());
-                            Debug.Log("Adding point: " + hit.point);
                         }
                     }
                 }
@@ -267,7 +266,7 @@ public class WaypointPlacement : MonoBehaviour
 
             stopwatch.Start();
             executingBFS = true;
-            Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startWorld, endWorld, bfsCancellationTokenSource.Token);
+            Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startGrid, endGrid, bfsCancellationTokenSource.Token);
             Debug.Log("BFS pathfinding completed in " + stopwatch.ElapsedMilliseconds + " ms");
             List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
             Debug.Log("Start: " + bfsPath[0]);

@@ -47,6 +47,8 @@ public class TerrainFilesGet
     public string rawFileName;
     public byte[] rawFileBytes;
     public List<TextureFileGet> textureFiles;
+    public string avalancheFileName;
+    public byte[] avalancheFileBytes;
 }
 
 public class TerrainJsonData
@@ -56,6 +58,7 @@ public class TerrainJsonData
     public Size size;
     public string rawFilePath;
     public List<string> textureFiles;
+    public string avalancheFilePath;
 
     [System.Serializable]
     public class Size
@@ -249,6 +252,14 @@ public class TerrainMenu : MonoBehaviour
         terrainJsonData.size.z = terrainGet.size_Z;
         terrainJsonData.rawFilePath = terainInfo.rawFileName;
         terrainJsonData.textureFiles = new List<string>();
+        if (terainInfo.avalancheFileName != null && terainInfo.avalancheFileBytes != null)
+        {
+            terrainJsonData.avalancheFilePath = terainInfo.avalancheFileName;
+        }
+        else
+        {
+            terrainJsonData.avalancheFilePath = null;
+        }
         foreach (TextureFileGet textureFile in terainInfo.textureFiles)
         {
             terrainJsonData.textureFiles.Add(textureFile.textureFileName);
@@ -272,6 +283,11 @@ public class TerrainMenu : MonoBehaviour
                 Directory.CreateDirectory(path);
             }
             File.WriteAllBytes(Path.Combine(path, terrainFilesGet.rawFileName), terrainFilesGet.rawFileBytes);
+
+            if (terrainFilesGet.avalancheFileBytes != null && terrainFilesGet.avalancheFileName != null)
+            {
+                File.WriteAllBytes(Path.Combine(path, terrainFilesGet.avalancheFileName), terrainFilesGet.avalancheFileBytes);
+            }
             foreach (TextureFileGet textureFile in terrainFilesGet.textureFiles)
             {
                 File.WriteAllBytes(Path.Combine(path, textureFile.textureFileName), textureFile.textureFileBytes);

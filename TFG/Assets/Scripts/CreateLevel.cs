@@ -45,6 +45,7 @@ public class LevelRequest
     public float optimal_total_positive_slope;
     public float optimal_total_negative_slope;
     public float optimal_metabolic_cost;
+    public int optimal_total_avalanches;
 }
 
 public class CreateLevel : MonoBehaviour
@@ -123,7 +124,7 @@ public class CreateLevel : MonoBehaviour
             Vector3 endWorld = waypointEnd.transform.position;
 
             stopwatch.Start();
-            Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startWorld, endWorld, bfsCancellationTokenSource.Token);
+            Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startGrid, endGrid, bfsCancellationTokenSource.Token);
             bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
             Debug.Log("BFS PATH COST: " + MetricsCalculation.getMetabolicPathCostFromArray(bfsPath));
             stopwatch.Stop();
@@ -204,6 +205,15 @@ public class CreateLevel : MonoBehaviour
         sendPost = true;
         List<Vector3Data> pathData = new List<Vector3Data>();
         MetricsCalculation.Metrics metrics = MetricsCalculation.getAllMetricsFromArray(bfsPath);
+        TerrainLoader terrainLoader = GetComponent<TerrainLoader>();
+        if (terrainLoader != null)
+        {
+            int[] avalancheValues = terrainLoader.GetAvalancheValues();
+            int mapWidth = terrainLoader.GetMapWidth();
+            float metersPerCell = terrainLoader.getMetersPerCell();
+            Vector3 terrainPos = terrainLoader.GetTerrainPosition();
+            metrics.accumulatedAvalancheValue = PlayerPrefs.GetInt("hasAvalancheFile", 0) == 1 ? MetricsCalculation.getAccumulateAvalancheValueFromArrayStatic(bfsPath, avalancheValues, terrainPos, mapWidth, metersPerCell) : 0;
+        }
         foreach (var point in bfsPath)
         {
             pathData.Add(new Vector3Data(point));
@@ -227,6 +237,7 @@ public class CreateLevel : MonoBehaviour
             optimal_total_positive_slope = metrics.positiveSlope,
             optimal_total_negative_slope = metrics.negativeSlope,
             optimal_metabolic_cost = metrics.metabolicPathCost,
+            optimal_total_avalanches = metrics.accumulatedAvalancheValue
         };
         Debug.Log("LevelRequest: " + levelRequest.name + " " + levelRequest.description + " " + levelRequest.start_X + " " + levelRequest.start_Y + " " + levelRequest.start_Z + " " + levelRequest.end_X + " " + levelRequest.end_Y + " " + levelRequest.end_Z + " " + levelRequest.path);
         string json = JsonConvert.SerializeObject(levelRequest);

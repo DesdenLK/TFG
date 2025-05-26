@@ -28,6 +28,7 @@ class Users(Base):
 class FileType(PyEnum):
     Texture = "Texture"
     Heightmap = "Heightmap"
+    Avalanche = "Avalanche"
 
 class FileStorage(Base):
     __tablename__ = 'file_storage'
@@ -75,6 +76,7 @@ class TerrainLevels(Base):
     optimal_total_positive_slope = Column(Float, nullable=False, default=0.0)
     optimal_total_negative_slope = Column(Float, nullable=False, default=0.0)
     optimal_metabolic_cost = Column(Float, nullable=False, default=0.0)
+    optimal_total_avalanches = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
 
 class LevelScores(Base):
@@ -83,12 +85,14 @@ class LevelScores(Base):
     uuid = Column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
     level_uuid = Column(UUID(as_uuid=True), ForeignKey('terrain_levels.uuid'), nullable=False)
     user_uuid = Column(UUID(as_uuid=True), ForeignKey('users.uuid'), nullable=False)
+    score = Column(Integer, nullable=False, default=0.0)
     total3D_distance = Column(Float, nullable=False)
     total2D_distance = Column(Float, nullable=False)
     total_slope = Column(Float, nullable=False)
     total_positive_slope = Column(Float, nullable=False)
     total_negative_slope = Column(Float, nullable=False)
     metabolic_cost = Column(Float, nullable=False)
+    total_avalanches = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
 
 

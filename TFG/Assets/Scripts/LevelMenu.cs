@@ -31,6 +31,7 @@ public class LeaderboardGet
     public float total_positive_slope;
     public float total_negative_slope;
     public float metabolic_cost;
+    public int score;
     public string created_at;
 }
 
@@ -51,6 +52,7 @@ public class LevelsGet
     public float optimal_total_positive_slope;
     public float optimal_total_negative_slope;
     public float optimal_metabolic_cost;
+    public int optimal_total_avalanches;
     public string creator;
     public string creator_uuid;
     public string datetime;
@@ -115,7 +117,7 @@ public class LevelMenu : MonoBehaviour
 
     public void onLeaderboardClick()
     {
-        leaderboardPanel.transform.Find("Back Button").GetComponent<Button>().interactable = false;
+        //leaderboardPanel.transform.Find("Back Button").GetComponent<Button>().interactable = false;
         StartCoroutine(requestHandler.GetRequest("/level-scores/" + levelSelected.uuid, OnGetLeaderboard));
         infoPanel.SetActive(false);
         leaderboardPanel.SetActive(true);
@@ -131,6 +133,7 @@ public class LevelMenu : MonoBehaviour
             {
                 GameObject scores = Instantiate(scoreText, scoresList);
                 scores.transform.Find("User").GetComponent<Text>().text = score.user;
+                scores.transform.Find("Score").GetComponent<Text>().text = score.score.ToString();
                 scores.transform.Find("Metabolic_Cost").GetComponent<Text>().text = score.metabolic_cost.ToString();
                 scores.transform.Find("2D_Distance").GetComponent<Text>().text = score.total2D_distance.ToString();
                 scores.transform.Find("3D_Distance").GetComponent<Text>().text = score.total3D_distance.ToString();
@@ -188,12 +191,20 @@ public class LevelMenu : MonoBehaviour
         createScoreList(sortedList);
     }
 
+    public void onScoreSort()
+    {
+        List<LeaderboardGet> sortedList = leadearboardList.OrderByDescending(x => x.score).ToList();
+        scoresList.DestroyChildren();
+        createScoreList(sortedList);
+    }
+
     private void createScoreList(List<LeaderboardGet> scoreList)
     {
         foreach (LeaderboardGet score in scoreList)
         {
             GameObject scores = Instantiate(scoreText, scoresList);
             scores.transform.Find("User").GetComponent<Text>().text = score.user;
+            scores.transform.Find("Score").GetComponent<Text>().text = score.score.ToString();
             scores.transform.Find("Metabolic_Cost").GetComponent<Text>().text = score.metabolic_cost.ToString();
             scores.transform.Find("2D_Distance").GetComponent<Text>().text = score.total2D_distance.ToString();
             scores.transform.Find("3D_Distance").GetComponent<Text>().text = score.total3D_distance.ToString();
@@ -218,6 +229,8 @@ public class LevelMenu : MonoBehaviour
         OptimalPathStorage.optimalTotalPositiveSlope = levelSelected.optimal_total_positive_slope;
         OptimalPathStorage.optimalTotalNegativeSlope = levelSelected.optimal_total_negative_slope;
         OptimalPathStorage.optimalMetabolicCost = levelSelected.optimal_metabolic_cost;
+        OptimalPathStorage.optimalAvalanches = levelSelected.optimal_total_avalanches;
+
 
         PlayerPrefs.SetString("PreviousScene", "LevelSelector");
         PlayerPrefs.SetString("LevelUUID", levelSelected.uuid);

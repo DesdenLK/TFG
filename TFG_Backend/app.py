@@ -45,6 +45,8 @@ class Terrain(BaseModel):
     creator: str
     rawFileName: str
     rawFileBytes: bytes
+    avalancheFileName: str
+    avalancheFileBytes: bytes = []
     textureFiles: List[TextureFile]
 
 class Vector3(BaseModel):
@@ -69,16 +71,19 @@ class TerrainLevel(BaseModel):
     optimal_total_positive_slope: float
     optimal_total_negative_slope: float
     optimal_metabolic_cost: float
+    optimal_total_avalanches: int = 0
 
 class LevelScore(BaseModel):
     level_uuid: str
     user: str
+    score: int
     total2D_distance: float
     total3D_distance: float
     total_slope: float
     total_positive_slope: float
     total_negative_slope: float
     metabolic_cost: float
+    number_avalanche: int
 
 
 @app.post("/register-user")
@@ -151,6 +156,14 @@ async def new_terrain(terrain: Terrain, db: sqlalchemy.orm.Session = Depends(get
                 file_data=bytes(texture.textureFileBytes)
             )
             db.add(new_texture_file)
+        if terrain.avalancheFileBytes:
+            new_avalanche_file = FileStorageModel(
+                terrain_uuid=new_terrain.uuid,
+                filename=terrain.avalancheFileName,
+                filetype="Avalanche",
+                file_data=bytes(terrain.avalancheFileBytes)
+            )
+            db.add(new_avalanche_file)
         db.commit()
 
         return {
@@ -223,6 +236,12 @@ async def download_terrain(terrain_uuid: str, db: sqlalchemy.orm.Session = Depen
         FileStorageModel.filetype == "Texture"
     ).all()
 
+    avalanche_file = db.query(FileStorageModel).filter(
+        FileStorageModel.terrain_uuid == terrain.uuid,
+        FileStorageModel.filetype == "Avalanche"
+    ).first()
+
+
     if not raw_file:
         raise HTTPException(status_code=404, detail="Raw file not found")
 
@@ -234,7 +253,9 @@ async def download_terrain(terrain_uuid: str, db: sqlalchemy.orm.Session = Depen
             "uuid": terrain.uuid,
             "rawFileName": raw_file.filename,
             "rawFileBytes": raw_file.file_data,
-            "textureFiles": [{"textureFileName": tf.filename, "textureFileBytes": tf.file_data} for tf in texture_files]
+            "textureFiles": [{"textureFileName": tf.filename, "textureFileBytes": tf.file_data} for tf in texture_files],
+            "avalancheFileName": avalanche_file.filename if avalanche_file else None,
+            "avalancheFileBytes": avalanche_file.file_data if avalanche_file else None,
         }
     }
 
@@ -260,7 +281,8 @@ async def create_level(terrain_uuid: str, level: TerrainLevel, db: sqlalchemy.or
         optimal_total_slope=level.optimal_total_slope,
         optimal_total_positive_slope=level.optimal_total_positive_slope,
         optimal_total_negative_slope=level.optimal_total_negative_slope,
-        optimal_metabolic_cost=level.optimal_metabolic_cost
+        optimal_metabolic_cost=level.optimal_metabolic_cost,
+        optimal_total_avalanches=level.optimal_total_avalanches
     )
     user = db.query(Users).filter(Users.name == level.creator).first()
     if not user:
@@ -329,6 +351,7 @@ async def get_levels(terrain_uuid: str, db: sqlalchemy.orm.Session = Depends(get
                 "optimal_total_positive_slope": level.optimal_total_positive_slope,
                 "optimal_total_negative_slope": level.optimal_total_negative_slope,
                 "optimal_metabolic_cost": level.optimal_metabolic_cost,
+                "optimal_total_avalanches": level.optimal_total_avalanches,
                 "creator": creator_dict.get(level.creator, "Unknown"),
                 "creator_uuid": level.creator,
                 "created_at": level.created_at.strftime("%Y-%m-%d %H:%M:%S") if level.created_at else None
@@ -347,12 +370,14 @@ async def submit_level_score(score: LevelScore, db: sqlalchemy.orm.Session = Dep
     new_score = LevelScoreModel(
         level_uuid=score.level_uuid,
         user_uuid=user.uuid,
+        score=score.score,
         total2D_distance=score.total2D_distance,
         total3D_distance=score.total3D_distance,
         total_slope=score.total_slope,
         total_positive_slope=score.total_positive_slope,
         total_negative_slope=score.total_negative_slope,
-        metabolic_cost=score.metabolic_cost
+        metabolic_cost=score.metabolic_cost,
+        total_avalanches=score.number_avalanche
     )
     try:
         db.add(new_score)
@@ -391,6 +416,7 @@ async def get_level_scores(level_uuid: str, db: sqlalchemy.orm.Session = Depends
                 "total_positive_slope": score.total_positive_slope,
                 "total_negative_slope": score.total_negative_slope,
                 "metabolic_cost": score.metabolic_cost,
+                "score": score.score,
                 "created_at": score.created_at.strftime("%Y-%m-%d %H:%M:%S") if score.created_at else None
             } 
             for score in scores]

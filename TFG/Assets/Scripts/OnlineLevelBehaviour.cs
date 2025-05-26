@@ -3,18 +3,21 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 public class ScoreRequest
 {
     public string level_uuid;
     public string user;
+    public int score;
     public float total2D_distance;
     public float total3D_distance;
     public float total_slope;
     public float total_positive_slope;
     public float total_negative_slope;
     public float metabolic_cost;
+    public int number_avalanche;
 }
 
 public class OnlineLevelBehaviour : MonoBehaviour
@@ -104,12 +107,11 @@ public class OnlineLevelBehaviour : MonoBehaviour
                     RaycastHit hit;
                     if (Physics.Raycast(ray, out hit))
                     {
-                        if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance)
+                        if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance && Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) < 50)
                         {
                             waypoints.Add(hit.point + new Vector3(0, 0.1f, 0));
                             lineRenderer.positionCount = waypoints.Count;
                             lineRenderer.SetPositions(waypoints.ToArray());
-                            Debug.Log("Adding point: " + hit.point);
                         }
                     }
                 }
@@ -143,15 +145,31 @@ public class OnlineLevelBehaviour : MonoBehaviour
         {
             level_uuid = PlayerPrefs.GetString("LevelUUID"),
             user = PlayerPrefs.GetString("username"),
+            score = computeScore(float.Parse(metricViewContent.transform.Find("Metabolic_Cost").GetComponent<Text>().text), OptimalPathStorage.optimalMetabolicCost),
             total2D_distance = float.Parse(metricViewContent.transform.Find("2D_Distance").GetComponent<Text>().text),
             total3D_distance = float.Parse(metricViewContent.transform.Find("3D_Distance").GetComponent<Text>().text),
             total_slope = float.Parse(metricViewContent.transform.Find("Total_Slope").GetComponent<Text>().text),
             total_positive_slope = float.Parse(metricViewContent.transform.Find("Total_Positive_Slope").GetComponent<Text>().text),
             total_negative_slope = float.Parse(metricViewContent.transform.Find("Total_Negative_Slope").GetComponent<Text>().text),
-            metabolic_cost = float.Parse(metricViewContent.transform.Find("Metabolic_Cost").GetComponent<Text>().text)
+            metabolic_cost = float.Parse(metricViewContent.transform.Find("Metabolic_Cost").GetComponent<Text>().text),
+            number_avalanche = int.Parse(metricViewContent.transform.Find("Number_Avalanche").GetComponent<Text>().text)
         };
         string json = JsonConvert.SerializeObject(scoreRequest);
         StartCoroutine(requestHandler.PostRequest("/submit-level-score", json, OnScoreResponse));
+    }
+
+    private int computeScore(float userCost, float optimalCost)
+    {
+        if (userCost <= optimalCost)
+        {
+            float bonus = 10f * (1f - (userCost / optimalCost));
+            float score = 100f + bonus;
+            return (int)score;
+        }
+
+        float deviation = userCost - optimalCost;
+        float scale = optimalCost * 1f;
+        return (int)(100f / (1f + deviation / scale));
     }
 
     private void OnScoreResponse(string json)
@@ -164,46 +182,58 @@ public class OnlineLevelBehaviour : MonoBehaviour
         }
         else
         {
+            int Score = computeScore((float.Parse(metricViewContent.transform.Find("Metabolic_Cost").GetComponent<Text>().text)), OptimalPathStorage.optimalMetabolicCost);
             float Distance3DDiff = ((float.Parse(metricViewContent.transform.Find("3D_Distance").GetComponent<Text>().text) - OptimalPathStorage.optimalTotal3DDistance) / OptimalPathStorage.optimalTotal3DDistance) * 100;
             float Distance2DDiff = ((float.Parse(metricViewContent.transform.Find("2D_Distance").GetComponent<Text>().text) - OptimalPathStorage.optimalTotal2DDistance) / OptimalPathStorage.optimalTotal2DDistance) * 100;
             float SlopeDiff = ((float.Parse(metricViewContent.transform.Find("Total_Slope").GetComponent<Text>().text) - OptimalPathStorage.optimalTotalSlope) / OptimalPathStorage.optimalTotalSlope) * 100;
             float PositiveSlopeDiff = ((float.Parse(metricViewContent.transform.Find("Total_Positive_Slope").GetComponent<Text>().text) - OptimalPathStorage.optimalTotalPositiveSlope) / OptimalPathStorage.optimalTotalPositiveSlope) * 100;
             float NegativeSlopeDiff = ((float.Parse(metricViewContent.transform.Find("Total_Negative_Slope").GetComponent<Text>().text) - OptimalPathStorage.optimalTotalNegativeSlope) / OptimalPathStorage.optimalTotalNegativeSlope) * 100;
             float MetabolicCostDiff = ((float.Parse(metricViewContent.transform.Find("Metabolic_Cost").GetComponent<Text>().text) - OptimalPathStorage.optimalMetabolicCost) / OptimalPathStorage.optimalMetabolicCost) * 100;
-
+            float userAvalanches = float.Parse(metricViewContent.transform.Find("Number_Avalanche").GetComponent<Text>().text);
+            float optimal = OptimalPathStorage.optimalAvalanches;
+            int AvalancheCount = Mathf.RoundToInt(((userAvalanches - optimal) / optimal) * 100f);
 
             scoreComparisonPanel.SetActive(true);
 
+            scoreComparisonPanel.transform.Find("Score").GetComponent<Text>().text = $"{Score}";
             scoreComparisonPanel.transform.Find("Total3DDistance").GetComponent<Text>().text = Distance3DDiff >= 0
                 ? $"Your 3D distance was {Distance3DDiff}% higher than the optimal."
-                : $"Your 3D distance was  {Distance3DDiff}% lower than the optimal.";
+                : $"Your 3D distance was {Distance3DDiff}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("Total2DDistance").GetComponent<Text>().text = Distance2DDiff >= 0
                 ? $"Your 2D distance was {Distance2DDiff}% higher than the optimal."
-                : $"Your 2D distance was  {Distance2DDiff}% lower than the optimal.";
+                : $"Your 2D distance was {Distance2DDiff}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("TotalSlope").GetComponent<Text>().text = SlopeDiff >= 0
                 ? $"Your slope was {SlopeDiff}% higher than the optimal."
-                : $"Your slope was  {SlopeDiff}% lower than the optimal.";
+                : $"Your slope was {SlopeDiff}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("TotalPositiveSlope").GetComponent<Text>().text = PositiveSlopeDiff >= 0
                 ? $"Your positive slope was {PositiveSlopeDiff}% higher than the optimal."
-                : $"Your positive slope was  {PositiveSlopeDiff}% lower than the optimal.";
+                : $"Your positive slope was {PositiveSlopeDiff}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("TotalNegativeSlope").GetComponent<Text>().text = NegativeSlopeDiff >= 0
                 ? $"Your negative slope was {NegativeSlopeDiff}% higher than the optimal."
-                : $"Your negative slope was  {NegativeSlopeDiff}% lower than the optimal.";
+                : $"Your negative slope was {NegativeSlopeDiff}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("MetabolicCost").GetComponent<Text>().text = MetabolicCostDiff >= 0
                 ? $"Your metabolic cost was {MetabolicCostDiff}% higher than the optimal."
-                : $"Your metabolic cost was  {MetabolicCostDiff}% lower than the optimal.";
+                : $"Your metabolic cost was {MetabolicCostDiff}% lower than the optimal.";
 
-            scoreComparisonPanel.transform.Find("Total3DDistance").GetComponent<Text>().color = Distance3DDiff >= 0 ? Color.red : Color.green;
-            scoreComparisonPanel.transform.Find("Total2DDistance").GetComponent<Text>().color = Distance2DDiff >= 0 ? Color.red : Color.green;
-            scoreComparisonPanel.transform.Find("TotalSlope").GetComponent<Text>().color = SlopeDiff >= 0 ? Color.red : Color.green;
-            scoreComparisonPanel.transform.Find("TotalPositiveSlope").GetComponent<Text>().color = PositiveSlopeDiff >= 0 ? Color.red : Color.green;
-            scoreComparisonPanel.transform.Find("TotalNegativeSlope").GetComponent<Text>().color = NegativeSlopeDiff >= 0 ? Color.red : Color.green;
-            scoreComparisonPanel.transform.Find("MetabolicCost").GetComponent<Text>().color = MetabolicCostDiff >= 0 ? Color.red : Color.green;
+            scoreComparisonPanel.transform.Find("AvalancheAmount").GetComponent<Text>().text = AvalancheCount >= 0
+                ? $"The risk of avalanche was {AvalancheCount}% higher than the optimal."
+                : $"The risk of avalanche was {AvalancheCount}% lower than the optimal.";
+
+            if (PlayerPrefs.GetInt("hasAvalancheFile") == 0) scoreComparisonPanel.transform.Find("AvalancheAmount").gameObject.SetActive(false);
+            else scoreComparisonPanel.transform.Find("AvalancheAmount").gameObject.SetActive(true);
+
+            scoreComparisonPanel.transform.Find("Total3DDistance").GetComponent<Text>().color = Distance3DDiff >= 0 ? new Vector4(0.75f,0,0,1) : new Vector4(0,0.75f,0,1);
+            scoreComparisonPanel.transform.Find("Total2DDistance").GetComponent<Text>().color = Distance2DDiff >= 0 ? new Vector4(0.75f,0,0,1) : new Vector4(0,0.75f,0,1);
+            scoreComparisonPanel.transform.Find("TotalSlope").GetComponent<Text>().color = SlopeDiff >= 0 ? new Vector4(0.75f, 0, 0, 1) : new Vector4(0, 0.75f, 0, 1);
+            scoreComparisonPanel.transform.Find("TotalPositiveSlope").GetComponent<Text>().color = PositiveSlopeDiff >= 0 ? new Vector4(0.75f,0,0,1) : new Vector4(0,0.75f,0,1);
+            scoreComparisonPanel.transform.Find("TotalNegativeSlope").GetComponent<Text>().color = NegativeSlopeDiff >= 0 ? new Vector4(0.75f,0,0,1) : new Vector4(0,0.75f,0,1);
+            scoreComparisonPanel.transform.Find("MetabolicCost").GetComponent<Text>().color = MetabolicCostDiff >= 0 ? new Vector4(0.75f,0,0,1) : new Vector4(0,0.75f,0,1);
+            scoreComparisonPanel.transform.Find("AvalancheAmount").GetComponent<Text>().color = AvalancheCount >= 0 ? new Vector4(0.75f,0,0,1) : new Vector4(0,0.75f,0,1);
 
         }
         resetLine();

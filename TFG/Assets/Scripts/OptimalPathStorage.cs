@@ -8,4 +8,5 @@ public static class OptimalPathStorage
     public static float optimalTotalPositiveSlope;
     public static float optimalTotalNegativeSlope;
     public static float optimalMetabolicCost;
+    public static int optimalAvalanches;
 }

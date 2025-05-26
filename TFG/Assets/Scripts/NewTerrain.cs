@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json.Bson;
+using Ookii.Dialogs;
 
 
 public class TextureFile
@@ -30,6 +31,8 @@ public class TerrainRequest
     public string rawFileName;
     public byte[] rawFileBytes;
     public List<TextureFile> textureFiles;
+    public string avalancheFileName;
+    public byte[] avalancheFileBytes;
 }
 public class NewTerrain : MonoBehaviour
 {
@@ -47,12 +50,14 @@ public class NewTerrain : MonoBehaviour
     public GameObject textureLabelPrefab;
 
     public Text rawFileText;
+    public Text avalancheFileText;
 
     public Button createTerrainButton;
     public Button backButton;
     private Requests requestHandler;
     private byte[] rawFileBytes;
     private List<TextureFile> textureFiles;
+    private byte[] avalancheFileBytes = new byte[0];
 
     private bool creatingTerrain = false;
 
@@ -113,6 +118,8 @@ public class NewTerrain : MonoBehaviour
             }
             terrainRequest.rawFileName = rawFileText.text;
             terrainRequest.rawFileBytes = rawFileBytes;
+            terrainRequest.avalancheFileName = avalancheFileText.text;
+            terrainRequest.avalancheFileBytes = avalancheFileBytes;
 
         }
     }
@@ -127,6 +134,10 @@ public class NewTerrain : MonoBehaviour
         size_y.text = "";
         size_z.text = "";
         rawFileText.text = "No file selected";
+        avalancheFileText.text = "No file selected";
+        rawFileBytes = new byte[0];
+        avalancheFileBytes = new byte[0];
+        textureFiles = new List<TextureFile>();
         textureFiles.Clear();
         foreach (Transform child in textureListContent)
         {
@@ -196,6 +207,22 @@ public class NewTerrain : MonoBehaviour
             rawFileText.text = Path.GetFileName(filePath);
 
             rawFileBytes = File.ReadAllBytes(filePath);
+        }
+    }
+
+    public void OpenFileExplorerAvalanche()
+    {
+        var extensions = new[] {
+            new ExtensionFilter("Avalanche Files", "txt")
+        };
+
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Select File", "", extensions, false);
+        if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
+        {
+            string filePath = paths[0];
+            avalancheFileText.text = Path.GetFileName(filePath);
+
+            avalancheFileBytes = File.ReadAllBytes(filePath);
         }
     }
 

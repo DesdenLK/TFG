@@ -20,9 +20,9 @@ public class PathFinder
 
     public Vector2Int WorldToGrid(Vector3 worldPos)
     {
-
-        float x = worldPos.x / terrainGraph.MetersPerCell;
-        float y = worldPos.z / terrainGraph.MetersPerCell;
+        Vector3 localPos = worldPos - terrain.GetPosition();
+        float x = localPos.x / terrainGraph.MetersPerCell;
+        float y = localPos.z / terrainGraph.MetersPerCell;
         Vector2Int point = new Vector2Int(Mathf.FloorToInt(x), Mathf.FloorToInt(y));
         return point;
     }
@@ -31,17 +31,15 @@ public class PathFinder
     {
         float x = (gridPos.x) * terrainGraph.MetersPerCell;
         float z = (gridPos.y) * terrainGraph.MetersPerCell;
-        float y = terrain.SampleHeight(new Vector3(x, 0, z));
-        Vector3 point = new Vector3(x, y, z);
+        float y = terrain.SampleHeight(new Vector3(x + terrain.GetPosition().x, 0, z + terrain.GetPosition().z));
+        Vector3 point = new Vector3(x + terrain.GetPosition().x, y, z + terrain.GetPosition().z);
         return point;
     }
 
-    public async UniTask<Dictionary<Vector2Int, Vector2Int>> FindPathThreadedAsync(Vector3 startWorldPos, Vector3 endWorldPos, CancellationToken token = default)
+    public async UniTask<Dictionary<Vector2Int, Vector2Int>> FindPathThreadedAsync(Vector2Int start, Vector2Int end, CancellationToken token = default)
     {
         return await UniTask.RunOnThreadPool(() =>
         {
-            Vector2Int start = WorldToGrid(startWorldPos);
-            Vector2Int end = WorldToGrid(endWorldPos);
 
             float[,] heightmap = terrainGraph.Heightmap;
 
@@ -74,10 +72,10 @@ public class PathFinder
                 ExploreNeighborAsync(current, current + Vector2Int.down, heightmap, queue, costSoFar, cameFrom, end);
                 ExploreNeighborAsync(current, current + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
                 ExploreNeighborAsync(current, current + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
-                //ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.left, heightmap, queue, costSoFar, cameFrom);
-                //ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.right, heightmap, queue, costSoFar, cameFrom);
-                //ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.left, heightmap, queue, costSoFar, cameFrom);
-                //ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.right, heightmap, queue, costSoFar, cameFrom);
+                ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
+                ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
+                ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
+                ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
             }
 
             return null;

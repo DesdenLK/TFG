@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Unity.XR.CoreUtils;
 using UnityEngine;
+using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Management;
 
@@ -25,13 +27,13 @@ public class CameraModeManager : MonoBehaviour
 
     public void SwitchMode(Mode mode, Vector3 pos)
     {
+        Mode previousMode = currentMode;
         currentMode = mode;
 
         thirdPersonCamera.SetActive(mode == Mode.ThirdPerson);
 
         firstPersonPlayer.SetActive(mode == Mode.FirstPerson);
 
-        vrPlayer.SetActive(mode == Mode.VR);
 
         if (mode == Mode.FirstPerson)
         {
@@ -70,39 +72,47 @@ public class CameraModeManager : MonoBehaviour
         {
             StartCoroutine(EnableVR());
 
-            miniMappanel.SetActive(true);
-            Vector3 endPos = WaypointStorage.waypointEnd;
-
-
-            // Posiciona al jugador VR en el inicio  
-            Debug.Log("Positioning VR player: " + pos);
-            var vrController = vrPlayer.GetComponent<CharacterController>();
-            vrController.enabled = false;
-
-            // Mover posición directamente  
-            vrPlayer.transform.position = pos + Vector3.up * 1.6f;
-            XROrigin origin = vrPlayer.GetComponent<XROrigin>();
-            if (origin != null)
+            if (vrEnabled)
             {
-                Transform offsetTransform = origin.CameraFloorOffsetObject.transform;
-                Vector3 offsetPos = offsetTransform.localPosition;
-                offsetPos.y = 1.85f;
-                offsetTransform.localPosition = offsetPos;
-            }
+                vrPlayer.SetActive(mode == Mode.VR);
+                miniMappanel.SetActive(true);
+                Vector3 endPos = WaypointStorage.waypointEnd;
 
-            // Opcional: haz que mire hacia el final  
-            Vector3 direction = (endPos - pos).normalized;
-            direction.y = 0; // Ignora inclinación si lo deseas  
-            if (direction != Vector3.zero)
+
+                // Posiciona al jugador VR en el inicio  
+                Debug.Log("Positioning VR player: " + pos);
+                var vrController = vrPlayer.GetComponent<CharacterController>();
+                vrController.enabled = false;
+
+                // Mover posición directamente  
+                vrPlayer.transform.position = pos + Vector3.up * 1.6f;
+                XROrigin origin = vrPlayer.GetComponent<XROrigin>();
+                if (origin != null)
+                {
+                    Transform offsetTransform = origin.CameraFloorOffsetObject.transform;
+                    Vector3 offsetPos = offsetTransform.localPosition;
+                    offsetPos.y = 1.85f;
+                    offsetTransform.localPosition = offsetPos;
+                }
+
+                // Opcional: haz que mire hacia el final  
+                Vector3 direction = (endPos - pos).normalized;
+                direction.y = 0; // Ignora inclinación si lo deseas  
+                if (direction != Vector3.zero)
+                {
+                    vrPlayer.transform.rotation = Quaternion.LookRotation(direction);
+                }
+
+                // Activa el controlador de personaje  
+                vrPlayer.GetComponent<CharacterController>().enabled = true;
+            }
+            else
             {
-                vrPlayer.transform.rotation = Quaternion.LookRotation(direction);
+                currentMode = previousMode;
+                thirdPersonCamera.SetActive(previousMode == Mode.ThirdPerson);
+
+                firstPersonPlayer.SetActive(previousMode == Mode.FirstPerson);
             }
-
-            // Activa el controlador de personaje  
-            vrPlayer.GetComponent<CharacterController>().enabled = true;
-   
-            
-
         }
 
         if (mode == Mode.ThirdPerson)
@@ -126,20 +136,44 @@ public class CameraModeManager : MonoBehaviour
         // Inicia el proceso
         yield return XRGeneralSettings.Instance.Manager.InitializeLoader();
 
-        // Espera hasta que se inicialice correctamente
+        int i = 0;
         while (XRGeneralSettings.Instance.Manager.activeLoader == null)
         {
-            Debug.Log("Esperando a que se cargue el XR Loader...");
+            if (i > 200) yield break;
+            i++;
+            Debug.LogWarning("No se pudo inicializar el XR Loader. VR no habilitado.");
             yield return null;
         }
 
         Debug.Log("Iniciando subsistemas XR...");
         XRGeneralSettings.Instance.Manager.StartSubsystems();
-
-        vrPlayer.SetActive(true);
         yield return null;
 
-        // Ahora puedes modificar el offset con más fiabilidad
+        
+        var subsystems = new List<XRDisplaySubsystem>();
+        SubsystemManager.GetSubsystems(subsystems);
+
+        XRDisplaySubsystem displaySubsystem = null;
+        foreach (var s in subsystems)
+        {
+            if (s.running) // Esta vez ya debería estar activo si hay visor
+            {
+                displaySubsystem = s;
+                break;
+            }
+        }
+
+        if (displaySubsystem == null)
+        {
+            Debug.LogWarning("No se detectó un visor VR conectado. VR deshabilitado.");
+            XRGeneralSettings.Instance.Manager.StopSubsystems();
+            XRGeneralSettings.Instance.Manager.DeinitializeLoader();
+            yield break;
+        }
+
+        Debug.Log("Subsistema XRDisplay activo. VR habilitado.");
+        vrPlayer.SetActive(true);
+
         XROrigin origin = vrPlayer.GetComponent<XROrigin>();
         if (origin != null && origin.CameraFloorOffsetObject != null)
         {
@@ -153,10 +187,10 @@ public class CameraModeManager : MonoBehaviour
         {
             Debug.LogWarning("No se encontró el CameraFloorOffsetObject.");
         }
-        vrEnabled = true;
 
-        Debug.Log("VR habilitado correctamente.");
+        vrEnabled = true;
     }
+
 
 
     IEnumerator DisableVR()

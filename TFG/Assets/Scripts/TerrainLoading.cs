@@ -17,6 +17,7 @@ public class TerrainLoader : MonoBehaviour
         public Vector3 size;
         public string rawFilePath;
         public string[] textureFiles;
+        public string avalancheFilePath;
     }
 
     public GameObject terrainObject;
@@ -26,6 +27,8 @@ public class TerrainLoader : MonoBehaviour
     private TerrainInfo terrainInfo;
     private TerrainLayer[] terrainLayers;
     private float[,] heightMap;
+    private int[] avalancheValues;
+    private Vector3 terrainPos;
 
     void Start()
     {
@@ -50,11 +53,20 @@ public class TerrainLoader : MonoBehaviour
                 float[,] heightMap = LoadRaw16(Path.Combine(folderPath, terrainInfo.rawFilePath), terrainInfo.widthmapResolution, terrainInfo.widthmapResolution);
                 FlipHeightMapVertically(ref heightMap);
                 ApplyHeightMapToTerrain(heightMap);
-
+                avalancheValues = LoadAvalancheMap(Path.Combine(folderPath, terrainInfo.avalancheFilePath), terrainInfo.widthmapResolution, terrainInfo.heightmapResolution);
+                if (avalancheValues != null)
+                {
+                    FlipAvalancheValuesVertically(ref avalancheValues, terrainInfo.widthmapResolution, terrainInfo.heightmapResolution);
+                    PlayerPrefs.SetInt("hasAvalancheFile", 1);
+                }
+                else PlayerPrefs.SetInt("hasAvalancheFile", 0);
+                //FlipAvalancheValuesHorizontally(ref avalancheValues, terrainInfo.widthmapResolution, terrainInfo.heightmapResolution);
                 addTerrainLayers(folderPath, terrainInfo);
+                terrainPos = terrain.GetPosition();
             }
         }
     }
+
 
     TerrainInfo LoadTerrainInfo(string path)
     {
@@ -156,6 +168,70 @@ public class TerrainLoader : MonoBehaviour
         assignLayerToTerrain(0);
     }
 
+    int[] LoadAvalancheMap(string path, int width, int height)
+    {
+        if (!File.Exists(path))
+        {
+            Debug.Log("Terrain with no avalanche file");
+            return null;
+        }
+
+        string[] tokens = File.ReadAllText(path).Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+        if (tokens.Length != width * height)
+        {
+            Debug.LogError($"Expected {width * height} avalanche values, got {tokens.Length}");
+            return null;
+        }
+
+        int[] avalancheMap = new int[width * height];
+
+        for (int i = 0; i < avalancheMap.Length; i++)
+        {
+            if (int.TryParse(tokens[i], out int val))
+                avalancheMap[i] = val;
+            else
+                avalancheMap[i] = 0;
+        }
+
+        return avalancheMap;
+    }
+
+    void FlipAvalancheValuesVertically(ref int[] avalancheValues, int width, int height)
+    {
+        for (int y = 0; y < height / 2; y++)
+        {
+            int oppositeY = height - y - 1;
+            for (int x = 0; x < width; x++)
+            {
+                int topIndex = y * width + x;
+                int bottomIndex = oppositeY * width + x;
+
+                int temp = avalancheValues[topIndex];
+                avalancheValues[topIndex] = avalancheValues[bottomIndex];
+                avalancheValues[bottomIndex] = temp;
+            }
+        }
+    }
+
+    void FlipAvalancheValuesHorizontally(ref int[] avalancheValues, int width, int height)
+    {
+        int[] flipped = new int[avalancheValues.Length];
+
+        for (int z = 0; z < height; z++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int originalIndex = z * width + x;
+                int flippedIndex = z * width + (width - 1 - x);
+                flipped[flippedIndex] = avalancheValues[originalIndex];
+            }
+        }
+
+        avalancheValues = flipped;
+    }
+
+
     Texture2D LoadTextureFromFile(string path, int width, int height)
     {
         if (File.Exists(path))
@@ -198,5 +274,46 @@ public class TerrainLoader : MonoBehaviour
         WaypointStorage.waypointStart = Vector3.negativeInfinity;
         WaypointStorage.waypointEnd = Vector3.negativeInfinity;
         SceneManager.LoadScene(PlayerPrefs.GetString("PreviousScene", "MainMenu"));
+    }
+
+    public int[] GetAvalancheValues()
+    {
+        if (avalancheValues == null || avalancheValues.Length == 0)
+        {
+            Debug.LogWarning("Avalanche values not set or terrain not loaded.");
+            return null;
+        }
+        return avalancheValues;
+    }
+
+    public int GetMapWidth()
+    {
+        if (terrainInfo != null)
+        {
+            return terrainInfo.widthmapResolution;
+        }
+        Debug.LogWarning("Terrain info not set.");
+        return 0;
+    }
+
+    public Vector3 GetTerrainPosition()
+    {
+        if (terrain != null)
+        {
+            return terrain.GetPosition();
+        }
+        Debug.LogWarning("Terrain not found.");
+        return Vector3.zero;
+    }
+
+    public float getMetersPerCell()
+    {
+        if (terrain != null)
+        {
+            Debug.Log("Terrain info found, meters per cell: " + terrain.terrainData.size.x + " " + heightMap.GetLength(1));
+            return terrain.terrainData.size.x / heightMap.GetLength(1);
+        }
+        Debug.LogWarning("Terrain info not set.");
+        return 0f;
     }
 }

@@ -16,6 +16,14 @@ public class MetricsCalculation : MonoBehaviour
 
     public Text metabolicPathCost_text;
 
+    public Text avalancheCoount;
+
+    public TerrainLoader terrainLoader;
+    private int[] avalancheValues;
+    private int mapWidth;
+    private Vector3 terrainPos;
+    private float metersPerCell;
+
     private bool isTerrainLoaded = false;
 
     public struct Metrics
@@ -26,6 +34,7 @@ public class MetricsCalculation : MonoBehaviour
         public float negativeSlope;
         public float totalSlope;
         public float metabolicPathCost;
+        public int accumulatedAvalancheValue;
     }
 
     private Metrics metrics = new Metrics();
@@ -131,6 +140,102 @@ public class MetricsCalculation : MonoBehaviour
         return metabolicPathCost;
     }
 
+    public int getAccumulateAvalancheValueFromArray(List<Vector3> path)
+    {
+        int totalAvalancheValue = 0;
+        int mapHeight = avalancheValues.Length / mapWidth;
+
+        for (int i = 0; i < path.Count - 1; i++)
+        {
+            Vector3 worldPos = path[i];
+            float localZ = (worldPos.z - terrainPos.z) / metersPerCell;
+            float localX = (worldPos.x - terrainPos.x) / metersPerCell;
+
+            int x = Mathf.RoundToInt(localX);
+            int z = Mathf.RoundToInt(localZ);
+
+            Debug.Log($"World Position: {worldPos}, Local X: {localX}, Local Z: {localZ}, X: {x}, Z: {z}");
+
+
+            if (x >= 0 && x < mapWidth && z >= 0 && z < mapHeight)
+            {
+                int index = z * mapWidth + x;
+                float value = avalancheValues[index];
+                totalAvalancheValue += (int)value;
+            }
+            else
+            {
+                Debug.LogWarning($"Position out of bounds: X={x}, Z={z} for map width {mapWidth} and height {mapHeight}");
+            }
+        }
+
+        return totalAvalancheValue;
+    }
+
+    public static int getAccumulateAvalancheValueFromArrayStatic(List<Vector3> path, int[] avalancheValues, Vector3 terrainPos, int mapWidth, float metersPerCell)
+    {
+        int totalAvalancheValue = 0;
+        int mapHeight = avalancheValues.Length / mapWidth;
+
+        for (int i = 0; i < path.Count - 1; i++)
+        {
+            Vector3 worldPos = path[i];
+            float localZ = (worldPos.z - terrainPos.z) / metersPerCell;
+            float localX = (worldPos.x - terrainPos.x) / metersPerCell;
+
+            int x = Mathf.RoundToInt(localX);
+            int z = Mathf.RoundToInt(localZ);
+
+            Debug.Log($"World Position: {worldPos}, Local X: {localX}, Local Z: {localZ}, X: {x}, Z: {z}");
+
+
+            if (x >= 0 && x < mapWidth && z >= 0 && z < mapHeight)
+            {
+                int index = z * mapWidth + x;
+                float value = avalancheValues[index];
+                totalAvalancheValue += (int)value;
+            }
+            else
+            {
+                Debug.LogWarning($"Position out of bounds: X={x}, Z={z} for map width {mapWidth} and height {mapHeight}");
+            }
+        }
+
+        return totalAvalancheValue;
+    }
+    public int getAccumulatedAvalancheValue()
+    {
+        int totalAvalancheValue = 0;
+        int mapHeight = avalancheValues.Length / mapWidth;
+
+        for (int i = 0; i < lineRenderer.positionCount; i++)
+        {
+            Vector3 worldPos = lineRenderer.GetPosition(i);
+            float localZ = (worldPos.z - terrainPos.z) / metersPerCell;
+            float localX = (worldPos.x - terrainPos.x) / metersPerCell;
+
+            int x = Mathf.RoundToInt(localX);
+            int z = Mathf.RoundToInt(localZ);
+
+
+
+            if (x >= 0 && x < mapWidth && z >= 0 && z < mapHeight)
+            {
+                int index = z * mapWidth + x;
+                float value = avalancheValues[index];
+                totalAvalancheValue += (int)value;
+            }
+            else
+            {
+                Debug.LogWarning($"Position out of bounds: X={x}, Z={z} for map width {mapWidth} and height {mapHeight}");
+            }
+        }
+
+        return totalAvalancheValue;
+    }
+
+
+
     public static float getMetabolicCostBetweenTwoPoints(Vector3 start, Vector3 end)
     {
         Vector2 start2D = new Vector2(start.x, start.z);
@@ -140,6 +245,16 @@ public class MetricsCalculation : MonoBehaviour
         float averageSlope = verticalDistance / planarDistance;
         float factor1 = 1 + 7.92f * averageSlope;
         return planarDistance * Mathf.Pow(factor1, 1.2f);
+    }
+
+    public void getAccumulatedAvalancheValueWrapper()
+    {
+        if (lineRenderer == null || lineRenderer.positionCount == 0 || avalancheValues == null || avalancheValues.Length == 0)
+        {
+            metrics.accumulatedAvalancheValue = 0;
+            return;
+        }
+        metrics.accumulatedAvalancheValue =  getAccumulatedAvalancheValue();
     }
 
     public void setTerrainLoadedTrue()
@@ -155,6 +270,7 @@ public class MetricsCalculation : MonoBehaviour
         positiveSlope_text.text = metrics.positiveSlope.ToString();
         negativeSlope_text.text = metrics.negativeSlope.ToString();
         metabolicPathCost_text.text = metrics.metabolicPathCost.ToString();
+        avalancheCoount.text = metrics.accumulatedAvalancheValue.ToString();
     }
 
     public static Metrics getAllMetricsFromArray(List<Vector3> path)
@@ -163,11 +279,24 @@ public class MetricsCalculation : MonoBehaviour
         getTotalDistanceFromArray(path, out metrics.distance3D, out metrics.distance2D);
         getTotalSlopeFromArray(path, out metrics.totalSlope, out metrics.positiveSlope, out metrics.negativeSlope);
         metrics.metabolicPathCost = getMetabolicPathCostFromArray(path);
+        metrics.accumulatedAvalancheValue = 0;
         return metrics;
     }
 
     private void Update()
     {
+        if (avalancheValues == null || avalancheValues.Length == 0)
+        {
+            if (terrainLoader == null)
+            {
+                Debug.LogWarning("TerrainLoader not found in the scene.");
+                return;
+            }
+            avalancheValues = terrainLoader.GetAvalancheValues();
+            mapWidth = terrainLoader.GetMapWidth();
+            terrainPos = terrainLoader.GetTerrainPosition();
+            metersPerCell = terrainLoader.getMetersPerCell();
+        }
         if (PlayerPrefs.GetString("SelectedTerrain") != null) setTerrainLoadedTrue(); 
         if (!isTerrainLoaded)
             return;
@@ -176,7 +305,7 @@ public class MetricsCalculation : MonoBehaviour
         getTotalDistance();
         getTotalSlope();
         getMetabolicPathCost();
-
+        getAccumulatedAvalancheValueWrapper();
         updateMetricsTexts();
     }
 }
