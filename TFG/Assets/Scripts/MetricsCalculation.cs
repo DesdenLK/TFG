@@ -145,14 +145,16 @@ public class MetricsCalculation : MonoBehaviour
         int totalAvalancheValue = 0;
         int mapHeight = avalancheValues.Length / mapWidth;
 
+        HashSet<int> indexGridPositionsVisited = new HashSet<int>();
+
         for (int i = 0; i < path.Count - 1; i++)
         {
             Vector3 worldPos = path[i];
             float localZ = (worldPos.z - terrainPos.z) / metersPerCell;
             float localX = (worldPos.x - terrainPos.x) / metersPerCell;
 
-            int x = Mathf.RoundToInt(localX);
-            int z = Mathf.RoundToInt(localZ);
+            int x = Mathf.FloorToInt(localX);
+            int z = Mathf.FloorToInt(localZ);
 
             Debug.Log($"World Position: {worldPos}, Local X: {localX}, Local Z: {localZ}, X: {x}, Z: {z}");
 
@@ -160,8 +162,12 @@ public class MetricsCalculation : MonoBehaviour
             if (x >= 0 && x < mapWidth && z >= 0 && z < mapHeight)
             {
                 int index = z * mapWidth + x;
-                float value = avalancheValues[index];
-                totalAvalancheValue += (int)value;
+                if (!indexGridPositionsVisited.Contains(index))
+                {
+                    float value = avalancheValues[index];
+                    totalAvalancheValue += (int)value;
+                    indexGridPositionsVisited.Add(index);
+                }
             }
             else
             {
@@ -177,23 +183,28 @@ public class MetricsCalculation : MonoBehaviour
         int totalAvalancheValue = 0;
         int mapHeight = avalancheValues.Length / mapWidth;
 
+        HashSet<int> indexGridPositionsVisited = new HashSet<int>();
+
         for (int i = 0; i < path.Count - 1; i++)
         {
             Vector3 worldPos = path[i];
             float localZ = (worldPos.z - terrainPos.z) / metersPerCell;
             float localX = (worldPos.x - terrainPos.x) / metersPerCell;
 
-            int x = Mathf.RoundToInt(localX);
-            int z = Mathf.RoundToInt(localZ);
+            int x = Mathf.FloorToInt(localX);
+            int z = Mathf.FloorToInt(localZ);
 
-            Debug.Log($"World Position: {worldPos}, Local X: {localX}, Local Z: {localZ}, X: {x}, Z: {z}");
+            //Debug.Log($"World Position: {worldPos}, Local X: {localX}, Local Z: {localZ}, X: {x}, Z: {z}");
 
 
             if (x >= 0 && x < mapWidth && z >= 0 && z < mapHeight)
             {
                 int index = z * mapWidth + x;
-                float value = avalancheValues[index];
-                totalAvalancheValue += (int)value;
+                if (!indexGridPositionsVisited.Contains(index)) {
+                    float value = avalancheValues[index];
+                    totalAvalancheValue += (int)value;
+                    indexGridPositionsVisited.Add(index);
+                }
             }
             else
             {
@@ -207,6 +218,7 @@ public class MetricsCalculation : MonoBehaviour
     {
         int totalAvalancheValue = 0;
         int mapHeight = avalancheValues.Length / mapWidth;
+        HashSet<int> indexGridPositionsVisited = new HashSet<int>();
 
         for (int i = 0; i < lineRenderer.positionCount; i++)
         {
@@ -214,16 +226,20 @@ public class MetricsCalculation : MonoBehaviour
             float localZ = (worldPos.z - terrainPos.z) / metersPerCell;
             float localX = (worldPos.x - terrainPos.x) / metersPerCell;
 
-            int x = Mathf.RoundToInt(localX);
-            int z = Mathf.RoundToInt(localZ);
+            int x = Mathf.FloorToInt(localX);
+            int z = Mathf.FloorToInt(localZ);
 
 
 
             if (x >= 0 && x < mapWidth && z >= 0 && z < mapHeight)
             {
                 int index = z * mapWidth + x;
-                float value = avalancheValues[index];
-                totalAvalancheValue += (int)value;
+                if (!indexGridPositionsVisited.Contains(index))
+                {
+                    float value = avalancheValues[index];
+                    totalAvalancheValue += (int)value;
+                    indexGridPositionsVisited.Add(index);
+                }
             }
             else
             {

@@ -417,6 +417,7 @@ async def get_level_scores(level_uuid: str, db: sqlalchemy.orm.Session = Depends
                 "total_negative_slope": score.total_negative_slope,
                 "metabolic_cost": score.metabolic_cost,
                 "score": score.score,
+                "total_avalanches": score.total_avalanches,
                 "created_at": score.created_at.strftime("%Y-%m-%d %H:%M:%S") if score.created_at else None
             } 
             for score in scores]

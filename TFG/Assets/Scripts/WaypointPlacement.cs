@@ -16,6 +16,8 @@ public class WaypointPlacement : MonoBehaviour
     public Button computeOptimalButton;
     public Button finishDrawing;
 
+    public GameObject optimalMetricsView;
+
 
     public LineRenderer lineRenderer;
     public float minDistance = 0.1f;
@@ -37,6 +39,7 @@ public class WaypointPlacement : MonoBehaviour
 
 
     private PathFinder pathFinder;
+    private List<Vector3> bfsPath;
     private GameObject bfsLineRenderer;
     public Terrain terrain;
     private CancellationTokenSource bfsCancellationTokenSource;
@@ -61,6 +64,7 @@ public class WaypointPlacement : MonoBehaviour
         if (bfsLineRenderer != null) Destroy(bfsLineRenderer);
         computeOptimalButton.interactable = true;
         resetLine();
+        resetOptimalMetricsView();
     }
 
     public void PlaceEnd()
@@ -73,8 +77,10 @@ public class WaypointPlacement : MonoBehaviour
         waypoints.Clear();
         computedBFS = false;
         if (bfsLineRenderer != null) Destroy(bfsLineRenderer);
+        resetOptimalMetricsView();
         computeOptimalButton.interactable = true;
         resetLine();
+        resetOptimalMetricsView();
     }
 
     private void UpdatePoints()
@@ -167,7 +173,7 @@ public class WaypointPlacement : MonoBehaviour
                     RaycastHit hit;
                     if (Physics.Raycast(ray, out hit))
                     {
-                        if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance && Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) < 50)
+                        if (waypoints.Count == 0 || (Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance && Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) < 50))
                         {
                             waypoints.Add(hit.point + new Vector3(0, 0.1f,0));
                             lineRenderer.positionCount = waypoints.Count;
@@ -195,6 +201,66 @@ public class WaypointPlacement : MonoBehaviour
         if (canDraw && cameraModeManager.currentMode == CameraModeManager.Mode.VR)
         {
             cameraModeManager.SwitchMode(CameraModeManager.Mode.VR, waypoints[waypoints.Count - 1]);
+        }
+    }
+
+    private void resetOptimalMetricsView()
+    {
+        if (optimalMetricsView != null)
+        {
+            GameObject content = optimalMetricsView.transform.Find("Scroll View/Viewport/Content")?.gameObject;
+            if (content != null)
+            {
+                content.transform.Find("2D_Distance").GetComponent<Text>().text = "0";
+                content.transform.Find("3D_Distance").GetComponent<Text>().text = "0";
+                content.transform.Find("Total_Slope").GetComponent<Text>().text = "0";
+                content.transform.Find("Total_Positive_Slope").GetComponent<Text>().text = "0";
+                content.transform.Find("Total_Negative_Slope").GetComponent<Text>().text = "0";
+                content.transform.Find("Metabolic_Cost").GetComponent<Text>().text = "0";
+                content.transform.Find("Number_Avalanche").GetComponent<Text>().text = "0";
+            }
+            else
+            {
+                Debug.LogError("Content GameObject not found in WaypointPlacement.resetOptimalMetricsView");
+            }
+        }
+    }
+
+    public void updateToggleMetricsOptimal()
+    {
+        optimalMetricsView.SetActive(!optimalMetricsView.activeSelf);
+
+        if (computedBFS && !executingBFS && optimalMetricsView.activeSelf)
+        {
+            GameObject content = optimalMetricsView.transform.Find("Scroll View/Viewport/Content")?.gameObject;
+            if (content != null)
+            {
+                MetricsCalculation.Metrics metrics = MetricsCalculation.getAllMetricsFromArray(bfsPath);
+                TerrainLoader terrainLoader = GetComponent<TerrainLoader>();
+                int[] avalanches = terrainLoader.GetAvalancheValues();
+                Vector3 terrainPos = terrainLoader.GetTerrainPosition();
+                int mapWidth = terrainLoader.GetMapWidth();
+                float metersPerCell = terrainLoader.getMetersPerCell();
+
+
+                metrics.accumulatedAvalancheValue = MetricsCalculation.getAccumulateAvalancheValueFromArrayStatic(bfsPath, avalanches, terrainPos, mapWidth, metersPerCell);
+                content.transform.Find("2D_Distance").GetComponent<Text>().text = metrics.distance2D.ToString();
+                content.transform.Find("3D_Distance").GetComponent<Text>().text = metrics.distance3D.ToString();
+                content.transform.Find("Total_Slope").GetComponent<Text>().text = metrics.totalSlope.ToString();
+                content.transform.Find("Total_Positive_Slope").GetComponent<Text>().text = metrics.positiveSlope.ToString();
+                content.transform.Find("Total_Negative_Slope").GetComponent<Text>().text = metrics.negativeSlope.ToString();
+                content.transform.Find("Metabolic_Cost").GetComponent<Text>().text = metrics.metabolicPathCost.ToString();
+                content.transform.Find("Number_Avalanche").GetComponent<Text>().text = metrics.accumulatedAvalancheValue.ToString();
+            }
+            else
+            {
+                Debug.LogError("Content GameObject not found in WaypointPlacement.updateToggleMetricsOptimal");
+                resetOptimalMetricsView();
+            }
+        }
+        else
+        {
+            resetOptimalMetricsView();
         }
     }
 
@@ -268,7 +334,7 @@ public class WaypointPlacement : MonoBehaviour
             executingBFS = true;
             Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startGrid, endGrid, bfsCancellationTokenSource.Token);
             Debug.Log("BFS pathfinding completed in " + stopwatch.ElapsedMilliseconds + " ms");
-            List<Vector3> bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
+            bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
             Debug.Log("Start: " + bfsPath[0]);
             Debug.Log("BFS PATH COST: " + MetricsCalculation.getMetabolicPathCostFromArray(bfsPath));
             stopwatch.Stop();

@@ -32,6 +32,7 @@ public class LeaderboardGet
     public float total_negative_slope;
     public float metabolic_cost;
     public int score;
+    public int total_avalanches;
     public string created_at;
 }
 
@@ -140,6 +141,7 @@ public class LevelMenu : MonoBehaviour
                 scores.transform.Find("Total Slope").GetComponent<Text>().text = score.total_slope.ToString();
                 scores.transform.Find("Total Positive Slope").GetComponent<Text>().text = score.total_positive_slope.ToString();
                 scores.transform.Find("Total Negative Slope").GetComponent<Text>().text = score.total_negative_slope.ToString();
+                scores.transform.Find("Total Avalanches").GetComponent<Text>().text = score.total_avalanches.ToString();
             }
         }
         else
@@ -197,6 +199,13 @@ public class LevelMenu : MonoBehaviour
         scoresList.DestroyChildren();
         createScoreList(sortedList);
     }
+    
+    public void onAvalanchesSort()
+    {
+        List<LeaderboardGet> sortedList = leadearboardList.OrderBy(x => x.total_avalanches).ToList();
+        scoresList.DestroyChildren();
+        createScoreList(sortedList);
+    }
 
     private void createScoreList(List<LeaderboardGet> scoreList)
     {
@@ -211,6 +220,7 @@ public class LevelMenu : MonoBehaviour
             scores.transform.Find("Total Slope").GetComponent<Text>().text = score.total_slope.ToString();
             scores.transform.Find("Total Positive Slope").GetComponent<Text>().text = score.total_positive_slope.ToString();
             scores.transform.Find("Total Negative Slope").GetComponent<Text>().text = score.total_negative_slope.ToString();
+            scores.transform.Find("Total Avalanches").GetComponent<Text>().text = score.total_avalanches.ToString();
         }
     }
 

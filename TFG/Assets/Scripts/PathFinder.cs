@@ -72,10 +72,10 @@ public class PathFinder
                 ExploreNeighborAsync(current, current + Vector2Int.down, heightmap, queue, costSoFar, cameFrom, end);
                 ExploreNeighborAsync(current, current + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
                 ExploreNeighborAsync(current, current + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
-                ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
-                ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
-                ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
-                ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
+                //ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
+                //ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
+                //ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
+                //ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
             }
 
             return null;
