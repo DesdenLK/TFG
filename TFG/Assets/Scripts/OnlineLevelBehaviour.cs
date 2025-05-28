@@ -322,8 +322,8 @@ public class OnlineLevelBehaviour : MonoBehaviour
         else if (cameraModeManager.currentMode == CameraModeManager.Mode.ThirdPerson && currentCameraMode != 0)
         {
             currentCameraMode = 0;
-            lineRenderer.startWidth = 50.0f;
-            lineRenderer.endWidth = 50.0f;
+            lineRenderer.startWidth = 10.0f;
+            lineRenderer.endWidth = 10.0f;
         }
         else if (cameraModeManager.currentMode == CameraModeManager.Mode.VR && currentCameraMode != 2)
         {

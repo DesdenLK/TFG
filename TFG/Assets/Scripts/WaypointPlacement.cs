@@ -52,6 +52,7 @@ public class WaypointPlacement : MonoBehaviour
     private void Start()
     {
         cameraModeManager = GetComponent<CameraModeManager>();
+        optimalMetricsView.SetActive(false);
     }
 
     public void PlaceStart()
