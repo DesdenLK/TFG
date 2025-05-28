@@ -13,14 +13,14 @@ def crop_and_save_png(input_path, output_path, crop_left, crop_top, crop_width, 
     print(f"Textura recortada y guardada en {output_path}")
 
 # Parámetros de entrada
-input_path = r"PathDrawing\StMaurici_1620-2970\slope_g8.png"  # Ruta de la textura original
-output_path = r"PathDrawing\StMaurici_1620-2970\slope_g8_cropped.png"  # Ruta para guardar la nueva textura
+input_path = r"PathDrawing\TerFreser_919-2910\allaus.png"  # Ruta de la textura original
+output_path = r"PathDrawing\TerFreser_919-2910\allaus_cropped.png"  # Ruta para guardar la nueva textura
 
 # Definir las dimensiones del recorte
 crop_left = 0    # Coordenada X de inicio del recorte
 crop_top = 0     # Coordenada Y de inicio del recorte
-crop_width = 1024  # Ancho del recorte (ajustar según necesidad)
-crop_height = 1024  # Alto del recorte (ajustar según necesidad)
+crop_width = 1025  # Ancho del recorte (ajustar según necesidad)
+crop_height = 1025  # Alto del recorte (ajustar según necesidad)
 
 # Recortar y guardar la textura como PNG
 crop_and_save_png(input_path, output_path, crop_left, crop_top, crop_width, crop_height)

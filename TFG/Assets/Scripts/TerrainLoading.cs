@@ -30,6 +30,9 @@ public class TerrainLoader : MonoBehaviour
     private int[] avalancheValues;
     private Vector3 terrainPos;
 
+
+    private TerrainLayer avalancheLayer;
+
     void Start()
     {
         terrain = terrainObject.GetComponent<Terrain>();
@@ -57,6 +60,13 @@ public class TerrainLoader : MonoBehaviour
                 {
                     FlipAvalancheValuesVertically(ref avalancheValues, terrainInfo.widthmapResolution, terrainInfo.heightmapResolution);
                     PlayerPrefs.SetInt("hasAvalancheFile", 1);
+
+                    Texture2D avalancheTexture = GenerateAvalancheTerrainTexture(avalancheValues, terrainInfo.widthmapResolution, terrainInfo.heightmapResolution);
+
+                    avalancheLayer = new TerrainLayer();
+                    avalancheLayer.diffuseTexture = avalancheTexture;
+                    avalancheLayer.smoothnessSource = TerrainLayerSmoothnessSource.Constant;
+                    avalancheLayer.tileSize = new Vector2(terrainInfo.widthmapResolution * terrainInfo.size.x - 1, terrainInfo.heightmapResolution * terrainInfo.size.z);
                 }
                 else PlayerPrefs.SetInt("hasAvalancheFile", 0);
                 //FlipAvalancheValuesHorizontally(ref avalancheValues, terrainInfo.widthmapResolution, terrainInfo.heightmapResolution);
@@ -166,6 +176,12 @@ public class TerrainLoader : MonoBehaviour
                 Debug.LogError($"The texture '{tInfo.textureFiles[i]}' could not be loaded.");
             }
         }
+        if (avalancheLayer != null)
+        {
+            Debug.Log("Adding avalanche layer to terrain layers");
+            validTerrainLayers.Add(avalancheLayer);
+            textureOptions.Add("Avalanche Map");
+        }
 
         terrainLayers = validTerrainLayers.ToArray();
         dropdown.AddOptions(textureOptions);
@@ -242,6 +258,30 @@ public class TerrainLoader : MonoBehaviour
 
         avalancheValues = flipped;
     }
+    public Texture2D GenerateAvalancheTerrainTexture(int[] values, int width, int height)
+    {
+        Texture2D texture = new Texture2D(width, height, TextureFormat.RGB24, false);
+        texture.filterMode = FilterMode.Point;
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int index = y * width + x;
+                int val = values[index];
+
+                float normalized = Mathf.Clamp01(val);
+                Color color = Color.Lerp(Color.green, Color.red, normalized);
+
+                texture.SetPixel(x, y, color);
+            }
+        }
+
+        texture.Apply();
+        return texture;
+    }
+
+
 
 
     Texture2D LoadTextureFromFile(string path, int width, int height)

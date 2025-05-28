@@ -212,7 +212,6 @@ public class MetricsCalculation : MonoBehaviour
                 Debug.LogWarning($"Position out of bounds: X={x}, Z={z} for map width {mapWidth} and height {mapHeight}");
             }
         }
-        Debug.Log("Total index grid positions visited static: " + indexGridPositionsVisited.Count);
 
         return totalAvalancheValue;
     }
@@ -254,7 +253,6 @@ public class MetricsCalculation : MonoBehaviour
                 }
             }
         }
-        Debug.Log("Total index grid positions visited: " + indexGridPositionsVisited.Count);
 
         return totalAvalancheValue;
     }

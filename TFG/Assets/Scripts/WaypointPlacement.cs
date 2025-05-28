@@ -37,6 +37,8 @@ public class WaypointPlacement : MonoBehaviour
     private bool computedBFS = false;
     private bool executingBFS = false;
 
+    private bool optimalMetricsViewActive = false;
+
 
     private PathFinder pathFinder;
     private List<Vector3> bfsPath;
@@ -228,7 +230,8 @@ public class WaypointPlacement : MonoBehaviour
 
     public void updateToggleMetricsOptimal()
     {
-        optimalMetricsView.SetActive(!optimalMetricsView.activeSelf);
+        optimalMetricsViewActive = !optimalMetricsViewActive;
+        optimalMetricsView.SetActive(optimalMetricsViewActive);
 
         if (computedBFS && !executingBFS && optimalMetricsView.activeSelf)
         {
@@ -242,15 +245,21 @@ public class WaypointPlacement : MonoBehaviour
                 int mapWidth = terrainLoader.GetMapWidth();
                 float metersPerCell = terrainLoader.getMetersPerCell();
 
+                content.transform.Find("Number_Avalanche").gameObject.SetActive(PlayerPrefs.GetInt("hasAvalancheFile", 0) == 1);
+                content.transform.Find("Number_Avalanche_Label").gameObject.SetActive(PlayerPrefs.GetInt("hasAvalancheFile", 0) == 1);
 
-                metrics.accumulatedAvalancheValue = MetricsCalculation.getAccumulateAvalancheValueFromArrayStatic(bfsPath, avalanches, terrainPos, mapWidth, metersPerCell);
+
                 content.transform.Find("2D_Distance").GetComponent<Text>().text = metrics.distance2D.ToString();
                 content.transform.Find("3D_Distance").GetComponent<Text>().text = metrics.distance3D.ToString();
                 content.transform.Find("Total_Slope").GetComponent<Text>().text = metrics.totalSlope.ToString();
                 content.transform.Find("Total_Positive_Slope").GetComponent<Text>().text = metrics.positiveSlope.ToString();
                 content.transform.Find("Total_Negative_Slope").GetComponent<Text>().text = metrics.negativeSlope.ToString();
                 content.transform.Find("Metabolic_Cost").GetComponent<Text>().text = metrics.metabolicPathCost.ToString();
-                content.transform.Find("Number_Avalanche").GetComponent<Text>().text = metrics.accumulatedAvalancheValue.ToString();
+                if (PlayerPrefs.GetInt("hasAvalancheFile", 0) == 1)
+                {
+                    metrics.accumulatedAvalancheValue = MetricsCalculation.getAccumulateAvalancheValueFromArrayStatic(bfsPath, avalanches, terrainPos, mapWidth, metersPerCell);
+                    content.transform.Find("Number_Avalanche").GetComponent<Text>().text = metrics.accumulatedAvalancheValue.ToString();
+                }
             }
             else
             {
