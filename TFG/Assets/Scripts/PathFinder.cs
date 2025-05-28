@@ -47,11 +47,18 @@ public class PathFinder
             Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
 
             int estimatedNodes = terrainGraph.Width * terrainGraph.Height;
-            Dictionary<Vector2Int, float> costSoFar = new Dictionary<Vector2Int, float>(estimatedNodes);
+            float[,] costSoFar = new float[terrainGraph.Height, terrainGraph.Width];
+            for (int i = 0; i < terrainGraph.Height; i++)
+            {
+                for (int j = 0; j < terrainGraph.Width; j++)
+                {
+                    costSoFar[i, j] = float.MaxValue;
+                }
+            }
 
             queue.Enqueue(start, 0);
             cameFrom[start] = new Vector2Int(-1, -1);
-            costSoFar[start] = 0;
+            costSoFar[start.y, start.x] = 0;
 
             while (queue.Count > 0)
             {
@@ -62,8 +69,7 @@ public class PathFinder
                 {
                     cameFrom[end] = current;
                     float cost = CalculateCostFromHeightmapOptimized(current, end, heightmap);
-                    costSoFar[end] = costSoFar[current] + cost;
-                    Debug.Log("Path found with cost = " + costSoFar[end]);
+                    costSoFar[end.y,end.x] = costSoFar[current.y, current.x] + cost;
                     return cameFrom;
                 }
 
@@ -72,10 +78,10 @@ public class PathFinder
                 ExploreNeighborAsync(current, current + Vector2Int.down, heightmap, queue, costSoFar, cameFrom, end);
                 ExploreNeighborAsync(current, current + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
                 ExploreNeighborAsync(current, current + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
-                //ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
-                //ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
-                //ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
-                //ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
+                ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
+                ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
+                ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
+                ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
             }
 
             return null;
@@ -85,26 +91,33 @@ public class PathFinder
     private void ExploreNeighborAsync(Vector2Int current, Vector2Int neighbor,
                            float[,] heightmap,
                            SimplePriorityQueue<Vector2Int> queue,
-                          Dictionary<Vector2Int, float> costSoFar,
+                          float[,] costSoFar,
                            Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int end)
     {
         if (!terrainGraph.isCellValid(neighbor)) return;
 
-        float currentCost = costSoFar[current];
+        float currentCost = costSoFar[current.y, current.x];
         float stepCost = CalculateCostFromHeightmapOptimized(current, neighbor, heightmap);
         float newCost = currentCost + stepCost;
    
 
-        if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor])
+        if (newCost < costSoFar[neighbor.y, neighbor.x])
         {
-            costSoFar[neighbor] = newCost;
+            costSoFar[neighbor.y, neighbor.x] = newCost;
             cameFrom[neighbor] = current;
 
-            // Heurística admisible: distancia en línea recta (podrías usar tu fórmula metabólica también)
+
             float heuristic = Vector2Int.Distance(neighbor, end);
             float priority = newCost + heuristic;
 
-            queue.Enqueue(neighbor, priority);
+            if (!queue.Contains(neighbor))
+            {
+                queue.Enqueue(neighbor, priority);
+            }
+            else
+            {
+                queue.TryUpdatePriority(neighbor, priority);
+            }
         }
     }
 

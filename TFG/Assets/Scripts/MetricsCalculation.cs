@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.XR.OpenXR.Input;
 
 public class MetricsCalculation : MonoBehaviour
 {
@@ -211,41 +212,49 @@ public class MetricsCalculation : MonoBehaviour
                 Debug.LogWarning($"Position out of bounds: X={x}, Z={z} for map width {mapWidth} and height {mapHeight}");
             }
         }
+        Debug.Log("Total index grid positions visited static: " + indexGridPositionsVisited.Count);
 
         return totalAvalancheValue;
     }
-    public int getAccumulatedAvalancheValue()
+    public int getAccumulatedAvalancheValue() //Funció per lineRenderer, Path que no segueix grid
     {
         int totalAvalancheValue = 0;
         int mapHeight = avalancheValues.Length / mapWidth;
         HashSet<int> indexGridPositionsVisited = new HashSet<int>();
 
-        for (int i = 0; i < lineRenderer.positionCount; i++)
+
+        for (int i = 0; i < lineRenderer.positionCount - 1; i++)
         {
-            Vector3 worldPos = lineRenderer.GetPosition(i);
-            float localZ = (worldPos.z - terrainPos.z) / metersPerCell;
-            float localX = (worldPos.x - terrainPos.x) / metersPerCell;
+            Vector3 start = lineRenderer.GetPosition(i);
+            Vector3 end = lineRenderer.GetPosition(i + 1);
 
-            int x = Mathf.FloorToInt(localX);
-            int z = Mathf.FloorToInt(localZ);
+            int startX = Mathf.FloorToInt((start.x - terrainPos.x) / metersPerCell);
+            int startZ = Mathf.FloorToInt((start.z - terrainPos.z) / metersPerCell);
 
+            int endX = Mathf.FloorToInt((end.x - terrainPos.x) / metersPerCell);
+            int endZ = Mathf.FloorToInt((end.z - terrainPos.z) / metersPerCell);
 
+            List<Vector2Int> segmentPositions = GridUtils.Bresenham(new Vector2Int(startX, startZ), new Vector2Int(endX, endZ));
 
-            if (x >= 0 && x < mapWidth && z >= 0 && z < mapHeight)
+            foreach (var pos in segmentPositions)
             {
-                int index = z * mapWidth + x;
-                if (!indexGridPositionsVisited.Contains(index))
+                if (pos.x >= 0 && pos.x < mapWidth && pos.y >= 0 && pos.y < mapHeight)
                 {
-                    float value = avalancheValues[index];
-                    totalAvalancheValue += (int)value;
-                    indexGridPositionsVisited.Add(index);
+                    int index = pos.y * mapWidth + pos.x;
+                    if (!indexGridPositionsVisited.Contains(index))
+                    {
+                        float value = avalancheValues[index];
+                        totalAvalancheValue += (int)value;
+                        indexGridPositionsVisited.Add(index);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"Position out of bounds: X={pos.x}, Z={pos.y} for map width {mapWidth} and height {mapHeight}");
                 }
             }
-            else
-            {
-                Debug.LogWarning($"Position out of bounds: X={x}, Z={z} for map width {mapWidth} and height {mapHeight}");
-            }
         }
+        Debug.Log("Total index grid positions visited: " + indexGridPositionsVisited.Count);
 
         return totalAvalancheValue;
     }

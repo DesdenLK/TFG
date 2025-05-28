@@ -272,6 +272,7 @@ public class WaypointPlacement : MonoBehaviour
             waypoints.Add(waypointEnd.transform.position);
             lineRenderer.positionCount = waypoints.Count;
             lineRenderer.SetPositions(waypoints.ToArray());
+            Debug.Log("LineRenderer Count: " + lineRenderer.positionCount);
         }
     }
 
@@ -289,8 +290,8 @@ public class WaypointPlacement : MonoBehaviour
         lineRenderer.positionCount = bfsPath.Count;
         if (currentCameraMode == 0)
         {
-            lineRenderer.startWidth = 50.0f;
-            lineRenderer.endWidth = 50.0f;
+            lineRenderer.startWidth = 10.0f;
+            lineRenderer.endWidth = 10.0f;
         }
         else
         {
@@ -336,6 +337,7 @@ public class WaypointPlacement : MonoBehaviour
             Debug.Log("BFS pathfinding completed in " + stopwatch.ElapsedMilliseconds + " ms");
             bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
             Debug.Log("Start: " + bfsPath[0]);
+            Debug.Log("Bfs Path Count: " + bfsPath.Count);
             Debug.Log("BFS PATH COST: " + MetricsCalculation.getMetabolicPathCostFromArray(bfsPath));
             stopwatch.Stop();
             executingBFS = false;
@@ -415,16 +417,16 @@ public class WaypointPlacement : MonoBehaviour
             currentCameraMode = 0;
             placeStartButton.interactable = true;
             placeEndButton.interactable = true;
-            lineRenderer.startWidth = 50.0f;
-            lineRenderer.endWidth = 50.0f;
+            lineRenderer.startWidth = 10.0f;
+            lineRenderer.endWidth = 10.0f;
 
             if (bfsLineRenderer != null)
             {
                 LineRenderer bfsLineRendererComponent = bfsLineRenderer.GetComponent<LineRenderer>();
                 if (bfsLineRendererComponent != null)
                 {
-                    bfsLineRendererComponent.startWidth = 50.0f;
-                    bfsLineRendererComponent.endWidth = 50.0f;
+                    bfsLineRendererComponent.startWidth = 10.0f;
+                    bfsLineRendererComponent.endWidth = 10.0f;
                 }
             }
         }

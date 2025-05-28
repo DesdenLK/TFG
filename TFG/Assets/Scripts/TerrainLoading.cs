@@ -44,7 +44,6 @@ public class TerrainLoader : MonoBehaviour
         if (selectedTerrain != null) {
             string folderPath = selectedTerrain;
             terrainInfo = LoadTerrainInfo(folderPath);
-            dropdown.AddOptions(new List<string>(terrainInfo.textureFiles));
 
 
             if (terrainInfo != null && terrain != null)
@@ -145,10 +144,11 @@ public class TerrainLoader : MonoBehaviour
 
     private void addTerrainLayers(string path, TerrainInfo tInfo)
     {
-        terrainLayers = new TerrainLayer[tInfo.textureFiles.Length];
+        List<TerrainLayer> validTerrainLayers = new List<TerrainLayer>();
+        List<string> textureOptions = new List<string>();
+
         for (int i = 0; i < tInfo.textureFiles.Length; i++)
         {
-
             Texture2D texture = LoadTextureFromFile(Path.Combine(path, tInfo.textureFiles[i]), tInfo.widthmapResolution, tInfo.heightmapResolution);
 
             if (texture != null)
@@ -156,16 +156,28 @@ public class TerrainLoader : MonoBehaviour
                 TerrainLayer terrainLayer = new TerrainLayer();
                 terrainLayer.diffuseTexture = texture;
                 terrainLayer.smoothnessSource = TerrainLayerSmoothnessSource.Constant;
-                terrainLayer.tileSize = new Vector2(tInfo.widthmapResolution * tInfo.size.x-1, tInfo.heightmapResolution * tInfo.size.z);
+                terrainLayer.tileSize = new Vector2(tInfo.widthmapResolution * tInfo.size.x - 1, tInfo.heightmapResolution * tInfo.size.z);
 
-                terrainLayers[i] = terrainLayer;
+                validTerrainLayers.Add(terrainLayer);
+                textureOptions.Add(tInfo.textureFiles[i]);
             }
             else
             {
-                Debug.LogError("The texture could not be loded");
+                Debug.LogError($"The texture '{tInfo.textureFiles[i]}' could not be loaded.");
             }
         }
-        assignLayerToTerrain(0);
+
+        terrainLayers = validTerrainLayers.ToArray();
+        dropdown.AddOptions(textureOptions);
+
+        if (terrainLayers.Length > 0)
+        {
+            assignLayerToTerrain(0);
+        }
+        else
+        {
+            Debug.LogWarning("No valid terrain layers were created.");
+        }
     }
 
     int[] LoadAvalancheMap(string path, int width, int height)
@@ -238,7 +250,24 @@ public class TerrainLoader : MonoBehaviour
         {
             byte[] fileData = File.ReadAllBytes(path);
             Texture2D tex = new Texture2D(width, height);
-            tex.LoadImage(fileData);
+
+            if (!tex.LoadImage(fileData))
+            {
+                return null;
+            }
+
+            if (tex.width > width || tex.height > height)
+            {
+                return null;
+            }
+
+            float terrainAspect = (float)width / height;
+            float textureAspect = (float)tex.width / tex.height;
+
+            if (Mathf.Abs(terrainAspect - textureAspect) > 0.01f)
+            {
+                return null;
+            }
 
             return tex;
         }

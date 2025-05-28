@@ -9946,7 +9946,7 @@ MonoBehaviour:
   finishDrawing: {fileID: 631290701}
   optimalMetricsView: {fileID: 781156749}
   lineRenderer: {fileID: 2049570463}
-  minDistance: 0.1
+  minDistance: 0.05
   terrain: {fileID: 1082113505}
 --- !u!120 &2049570463
 LineRenderer:
@@ -9996,13 +9996,13 @@ LineRenderer:
   m_Positions: []
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 100
+    widthMultiplier: 10
     widthCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 1
-        value: 0.52830696
+        value: 1
         inSlope: 0
         outSlope: 0
         tangentMode: 0
