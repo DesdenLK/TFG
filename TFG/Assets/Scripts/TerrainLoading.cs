@@ -171,10 +171,6 @@ public class TerrainLoader : MonoBehaviour
                 validTerrainLayers.Add(terrainLayer);
                 textureOptions.Add(tInfo.textureFiles[i]);
             }
-            else
-            {
-                Debug.LogError($"The texture '{tInfo.textureFiles[i]}' could not be loaded.");
-            }
         }
         if (avalancheLayer != null)
         {

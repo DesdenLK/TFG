@@ -308,7 +308,7 @@ public class MetricsCalculation : MonoBehaviour
 
     private void Update()
     {
-        if (avalancheValues == null || avalancheValues.Length == 0)
+        if (PlayerPrefs.GetInt("hasAvalancheFile",0) == 1 && (avalancheValues == null || avalancheValues.Length == 0))
         {
             if (terrainLoader == null)
             {

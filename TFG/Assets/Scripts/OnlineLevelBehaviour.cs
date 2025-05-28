@@ -197,32 +197,32 @@ public class OnlineLevelBehaviour : MonoBehaviour
 
             scoreComparisonPanel.transform.Find("Score").GetComponent<Text>().text = $"{Score}";
             scoreComparisonPanel.transform.Find("Total3DDistance").GetComponent<Text>().text = Distance3DDiff >= 0
-                ? $"Your 3D distance was {Distance3DDiff}% higher than the optimal."
-                : $"Your 3D distance was {Distance3DDiff}% lower than the optimal.";
+                ? $"Your 3D distance was {Distance3DDiff.ToString("F2")}% higher than the optimal."
+                : $"Your 3D distance was {Distance3DDiff.ToString("F2")}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("Total2DDistance").GetComponent<Text>().text = Distance2DDiff >= 0
-                ? $"Your 2D distance was {Distance2DDiff}% higher than the optimal."
-                : $"Your 2D distance was {Distance2DDiff}% lower than the optimal.";
+                ? $"Your 2D distance was {Distance2DDiff.ToString("F2")}% higher than the optimal."
+                : $"Your 2D distance was {Distance2DDiff.ToString("F2")}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("TotalSlope").GetComponent<Text>().text = SlopeDiff >= 0
-                ? $"Your slope was {SlopeDiff}% higher than the optimal."
-                : $"Your slope was {SlopeDiff}% lower than the optimal.";
+                ? $"Your slope was {SlopeDiff.ToString("F2")}% higher than the optimal."
+                : $"Your slope was {SlopeDiff.ToString("F2")}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("TotalPositiveSlope").GetComponent<Text>().text = PositiveSlopeDiff >= 0
-                ? $"Your positive slope was {PositiveSlopeDiff}% higher than the optimal."
-                : $"Your positive slope was {PositiveSlopeDiff}% lower than the optimal.";
+                ? $"Your positive slope was {PositiveSlopeDiff.ToString("F2")}% higher than the optimal."
+                : $"Your positive slope was {PositiveSlopeDiff.ToString("F2")}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("TotalNegativeSlope").GetComponent<Text>().text = NegativeSlopeDiff >= 0
-                ? $"Your negative slope was {NegativeSlopeDiff}% higher than the optimal."
-                : $"Your negative slope was {NegativeSlopeDiff}% lower than the optimal.";
+                ? $"Your negative slope was {NegativeSlopeDiff.ToString("F2")}% higher than the optimal."
+                : $"Your negative slope was {NegativeSlopeDiff.ToString("F2")}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("MetabolicCost").GetComponent<Text>().text = MetabolicCostDiff >= 0
-                ? $"Your metabolic cost was {MetabolicCostDiff}% higher than the optimal."
-                : $"Your metabolic cost was {MetabolicCostDiff}% lower than the optimal.";
+                ? $"Your metabolic cost was {MetabolicCostDiff.ToString("F2")}% higher than the optimal."
+                : $"Your metabolic cost was {MetabolicCostDiff.ToString("F2")}% lower than the optimal.";
 
             scoreComparisonPanel.transform.Find("AvalancheAmount").GetComponent<Text>().text = AvalancheCount >= 0
-                ? $"The risk of avalanche was {AvalancheCount}% higher than the optimal."
-                : $"The risk of avalanche was {AvalancheCount}% lower than the optimal.";
+                ? $"The risk of avalanche was {AvalancheCount.ToString("F2")}% higher than the optimal."
+                : $"The risk of avalanche was {AvalancheCount.ToString("F2")}% lower than the optimal.";
 
             if (PlayerPrefs.GetInt("hasAvalancheFile") == 0) scoreComparisonPanel.transform.Find("AvalancheAmount").gameObject.SetActive(false);
             else scoreComparisonPanel.transform.Find("AvalancheAmount").gameObject.SetActive(true);
