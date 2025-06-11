@@ -2744,6 +2744,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2049570461}
     m_Modifications:
+    - target: {fileID: 886051151086248699, guid: 4bb8a5820e451144aa0432133b89cf99, type: 3}
+      propertyPath: m_UIScrollInput.m_InputSourceMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2962687584531859980, guid: 4bb8a5820e451144aa0432133b89cf99, type: 3}
       propertyPath: m_Name
       value: XR Origin (XR Rig)
@@ -2787,6 +2791,10 @@ PrefabInstance:
     - target: {fileID: 7835418282947142571, guid: 4bb8a5820e451144aa0432133b89cf99, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8761736365629129441, guid: 4bb8a5820e451144aa0432133b89cf99, type: 3}
+      propertyPath: m_UIScrollInput.m_InputSourceMode
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8853,6 +8861,7 @@ MonoBehaviour:
   waypointPrefab: {fileID: 766043388936290561, guid: 89dad6d367ce0a343a45fe22c41d7b7d, type: 3}
   flagPrefab: {fileID: 2138222362579719763, guid: 4f462dc2127d69f45a56f2b9bfb14a0f, type: 3}
   finishDrawing: {fileID: 1879865771}
+  resetButton: {fileID: 2130904139}
   lineRenderer: {fileID: 2049570463}
   minDistance: 0.1
   terrain: {fileID: 1082113505}
@@ -8861,6 +8870,9 @@ MonoBehaviour:
   savedScorePanel: {fileID: 649953453}
   buttonPanel: {fileID: 1637903992}
   scoreComparisonPanel: {fileID: 1738623415}
+  minWidth: 2
+  maxWidth: 100
+  widthChangeSpeed: 2
 --- !u!114 &2049570466
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8878,6 +8890,7 @@ MonoBehaviour:
   vrPlayer: {fileID: 651648689}
   currentMode: 0
   miniMappanel: {fileID: 2044283797}
+  vrEnabled: 0
 --- !u!1 &2072022429
 GameObject:
   m_ObjectHideFlags: 0
@@ -9058,7 +9071,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 2130904140}
   m_OnClick:
     m_PersistentCalls:

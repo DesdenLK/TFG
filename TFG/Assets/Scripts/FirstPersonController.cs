@@ -26,12 +26,17 @@ public class FirstPersonController : MonoBehaviour
     void Update()
     {
         if (EventSystem.current != null &&
-        EventSystem.current.currentSelectedGameObject != null &&
-        (EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.InputField>() != null ||
-        EventSystem.current.currentSelectedGameObject.GetComponent<TMPro.TMP_InputField>() != null))
+            EventSystem.current.currentSelectedGameObject != null &&
+            (
+                EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.InputField>() != null ||
+                EventSystem.current.currentSelectedGameObject.GetComponent<TMPro.TMP_InputField>() != null ||
+                EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.Dropdown>() != null ||
+                EventSystem.current.currentSelectedGameObject.GetComponent<TMPro.TMP_Dropdown>() != null
+            ))
         {
             return;
         }
+
         if (!controller.enabled)
         {
             velocity = Vector3.zero;

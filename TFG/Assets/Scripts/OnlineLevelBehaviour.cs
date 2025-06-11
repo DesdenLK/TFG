@@ -26,6 +26,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
     public GameObject waypointPrefab;
     public GameObject flagPrefab;
     public Button finishDrawing;
+    public Button resetButton;
 
     public LineRenderer lineRenderer;
     public float minDistance = 0.1f;
@@ -91,7 +92,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
                 }
                 break;
             case CameraModeManager.Mode.VR:
-                if (canDraw)
+                if (canDraw && cameraModeManager.isVREnabled())
                 {
                     Vector3 currentPos = Camera.main.transform.position;
                     if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], currentPos) > minDistance)
@@ -115,9 +116,9 @@ public class OnlineLevelBehaviour : MonoBehaviour
                     RaycastHit hit;
                     if (Physics.Raycast(ray, out hit))
                     {
-                        if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance && Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) < 50)
+                        if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance && Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) < 20)
                         {
-                            waypoints.Add(hit.point + new Vector3(0, 0.1f, 0));
+                            waypoints.Add(hit.point + new Vector3(0, 0.15f, 0));
                             lineRenderer.positionCount = waypoints.Count;
                             lineRenderer.SetPositions(waypoints.ToArray());
                         }
@@ -134,6 +135,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
     public void updateToggleInput()
     {
         canDraw = !canDraw;
+        resetButton.interactable = !canDraw;
 
         if (canDraw && cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson)
         {

@@ -5005,6 +5005,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1627965956}
     m_Modifications:
+    - target: {fileID: 2442306273320644280, guid: 3df3e1220f2164f448701a6de8084f92, type: 3}
+      propertyPath: m_UIScrollInput.m_InputSourceMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4804964734930210078, guid: 3df3e1220f2164f448701a6de8084f92, type: 3}
       propertyPath: m_Name
       value: Near-Far Interactor
@@ -9964,9 +9968,13 @@ MonoBehaviour:
   placeEndButton: {fileID: 1968959532}
   computeOptimalButton: {fileID: 1589786451}
   finishDrawing: {fileID: 631290701}
+  resetButton: {fileID: 2130904139}
   optimalMetricsView: {fileID: 781156749}
   lineRenderer: {fileID: 2049570463}
-  minDistance: 0.05
+  minDistance: 0.1
+  minWidth: 2
+  maxWidth: 100
+  widthChangeSpeed: 2
   terrain: {fileID: 1082113505}
 --- !u!120 &2049570463
 LineRenderer:
@@ -10111,6 +10119,7 @@ MonoBehaviour:
   vrPlayer: {fileID: 1288007410}
   currentMode: 0
   miniMappanel: {fileID: 6727995833184594618}
+  vrEnabled: 0
 --- !u!1 &2057720030
 GameObject:
   m_ObjectHideFlags: 0
@@ -10370,7 +10379,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 2130904140}
   m_OnClick:
     m_PersistentCalls:

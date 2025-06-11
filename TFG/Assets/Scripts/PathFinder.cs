@@ -78,10 +78,13 @@ public class PathFinder
                 ExploreNeighborAsync(current, current + Vector2Int.down, heightmap, queue, costSoFar, cameFrom, end);
                 ExploreNeighborAsync(current, current + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
                 ExploreNeighborAsync(current, current + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
-                ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
-                ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
-                ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
-                ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
+                if (terrainGraph.Width >= 4096)
+                {
+                    ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
+                    ExploreNeighborAsync(current, current + Vector2Int.up + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
+                    ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
+                    ExploreNeighborAsync(current, current + Vector2Int.down + Vector2Int.right, heightmap, queue, costSoFar, cameFrom, end);
+                }
             }
 
             return null;
@@ -138,12 +141,13 @@ public class PathFinder
         Debug.Log("Converting BFS path to points" + bfsPath.Count);
         List<Vector3> path = new List<Vector3>();
         Vector2Int current = end;
+        Vector3 offset = new Vector3(0, 0.2f, 0);
         while (current != start)
         {
-            path.Add(GridToWorld(current));
+            path.Add(GridToWorld(current) + offset);
             current = bfsPath[current];
         }
-        path.Add(GridToWorld(start));
+        path.Add(GridToWorld(start) + offset);
         path.Reverse();
         Debug.Log("Path found with " + path.Count + " points.");
         return path;

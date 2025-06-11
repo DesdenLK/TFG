@@ -24,16 +24,20 @@ public class VRFirstPersonController : MonoBehaviour
 
     void Update()
     {
-        // Bloqueo de movimiento si se está escribiendo en un campo de texto
         if (EventSystem.current != null &&
             EventSystem.current.currentSelectedGameObject != null &&
-            (EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.InputField>() != null ||
-             EventSystem.current.currentSelectedGameObject.GetComponent<TMPro.TMP_InputField>() != null))
+            (
+                EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.InputField>() != null ||
+                EventSystem.current.currentSelectedGameObject.GetComponent<TMPro.TMP_InputField>() != null ||
+                EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.Dropdown>() != null ||
+                EventSystem.current.currentSelectedGameObject.GetComponent<TMPro.TMP_Dropdown>() != null
+            ))
         {
             return;
         }
 
-        // Verifica si está en el suelo
+
+       
         Vector3 rayOrigin = transform.position + Vector3.up * 0.1f;
         isGrounded = Physics.Raycast(rayOrigin, Vector3.down, groundCheckDistance + 0.1f, groundMask);
 
@@ -42,10 +46,10 @@ public class VRFirstPersonController : MonoBehaviour
             velocity.y = -2f;
         }
 
-        // Leer movimiento del joystick
+       
         Vector2 input = moveAction.action.ReadValue<Vector2>();
 
-        // Mover en la dirección de la cabeza
+        
         Vector3 forward = headTransform.forward;
         forward.y = 0f;
         forward.Normalize();
@@ -57,7 +61,7 @@ public class VRFirstPersonController : MonoBehaviour
         Vector3 move = forward * input.y + right * input.x;
         controller.Move(move * speed * Time.deltaTime);
 
-        // Aplicar gravedad
+       
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
