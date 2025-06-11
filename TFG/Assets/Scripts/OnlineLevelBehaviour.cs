@@ -201,7 +201,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
             float MetabolicCostDiff = ((float.Parse(metricViewContent.transform.Find("Metabolic_Cost").GetComponent<Text>().text) - OptimalPathStorage.optimalMetabolicCost) / OptimalPathStorage.optimalMetabolicCost) * 100;
             float userAvalanches = float.Parse(metricViewContent.transform.Find("Number_Avalanche").GetComponent<Text>().text);
             float optimal = OptimalPathStorage.optimalAvalanches;
-            int AvalancheCount = Mathf.RoundToInt(((userAvalanches - optimal) / optimal) * 100f);
+            int AvalancheCount = optimal > 0 ? Mathf.RoundToInt(((userAvalanches - optimal) / optimal) * 100f) : 0;
 
             scoreComparisonPanel.SetActive(true);
 
