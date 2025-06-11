@@ -6,8 +6,29 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Login.unity
+    guid: fc1d31ae339f7644892a21b10d3c28ec
+  - enabled: 1
+    path: Assets/Scenes/CreateLevel.unity
+    guid: 247738b8388ded440bf125cc61e90857
+  - enabled: 1
+    path: Assets/Scenes/LevelSelector.unity
+    guid: bb33575f46a94b341960e8a8afc3403f
+  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: be77c14224368874baa63234b76ce696
+  - enabled: 1
+    path: Assets/Scenes/NewTerrain.unity
+    guid: 5a83166876341634cb683553b126fc1f
+  - enabled: 1
+    path: Assets/Scenes/OnlineLevel.unity
+    guid: 1eb1159b7d95a4149b42a35480710316
+  - enabled: 1
+    path: Assets/Scenes/TerrainSelector.unity
+    guid: e49d4705ca9a81349b83592de763d5e8
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 211f97e70625a0448a1a0e25eddb487f, type: 2}

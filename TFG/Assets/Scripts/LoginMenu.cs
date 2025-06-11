@@ -122,6 +122,7 @@ public class LoginMenu : MonoBehaviour
 
     public void OnBackButton()
     {
+        Application.Quit();
         Debug.Log("Back button clicked");
     }
 }
