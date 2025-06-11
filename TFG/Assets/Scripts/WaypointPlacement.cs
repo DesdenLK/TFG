@@ -39,6 +39,11 @@ public class WaypointPlacement : MonoBehaviour
 
     private bool optimalMetricsViewActive = false;
 
+    private float lineRendererWidth = 50.0f;
+    public float minWidth = 2f;
+    public float maxWidth = 100f;
+    public float widthChangeSpeed = 2f;
+
 
     private PathFinder pathFinder;
     private List<Vector3> bfsPath;
@@ -53,6 +58,8 @@ public class WaypointPlacement : MonoBehaviour
     {
         cameraModeManager = GetComponent<CameraModeManager>();
         optimalMetricsView.SetActive(false);
+        lineRenderer.startWidth = lineRendererWidth;
+        lineRenderer.endWidth = lineRendererWidth;
     }
 
     public void PlaceStart()
@@ -300,8 +307,8 @@ public class WaypointPlacement : MonoBehaviour
         lineRenderer.positionCount = bfsPath.Count;
         if (currentCameraMode == 0)
         {
-            lineRenderer.startWidth = 10.0f;
-            lineRenderer.endWidth = 10.0f;
+            lineRenderer.startWidth = lineRendererWidth;
+            lineRenderer.endWidth = lineRendererWidth;
         }
         else
         {
@@ -402,6 +409,41 @@ public class WaypointPlacement : MonoBehaviour
             Cursor.visible = true;
         }
 
+        if (Input.GetKeyDown(KeyCode.LeftBracket) && currentCameraMode == 0)
+        {
+            float newWidth = Math.Max(minWidth, lineRenderer.startWidth - widthChangeSpeed);
+            lineRenderer.startWidth = newWidth;
+            lineRenderer.endWidth = newWidth;
+
+            if (bfsLineRenderer != null)
+            {
+                LineRenderer bfsLineRendererComponent = bfsLineRenderer.GetComponent<LineRenderer>();
+                if (bfsLineRendererComponent != null)
+                {
+                    bfsLineRendererComponent.startWidth = newWidth;
+                    bfsLineRendererComponent.endWidth = newWidth;
+                }
+            }
+
+            lineRendererWidth = newWidth;
+        }
+
+        if (Input.GetKeyDown(KeyCode.RightBracket) && currentCameraMode == 0)
+        {
+            float newWidth = Math.Min(maxWidth, lineRenderer.startWidth + widthChangeSpeed);
+            lineRenderer.startWidth = newWidth;
+            lineRenderer.endWidth = newWidth;
+            if (bfsLineRenderer != null)
+            {
+                LineRenderer bfsLineRendererComponent = bfsLineRenderer.GetComponent<LineRenderer>();
+                if (bfsLineRendererComponent != null)
+                {
+                    bfsLineRendererComponent.startWidth = newWidth;
+                    bfsLineRendererComponent.endWidth = newWidth;
+                }
+            }
+            lineRendererWidth = newWidth;
+        }
 
         if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson && currentCameraMode != 1)
         {
@@ -427,16 +469,16 @@ public class WaypointPlacement : MonoBehaviour
             currentCameraMode = 0;
             placeStartButton.interactable = true;
             placeEndButton.interactable = true;
-            lineRenderer.startWidth = 10.0f;
-            lineRenderer.endWidth = 10.0f;
+            lineRenderer.startWidth = lineRendererWidth;
+            lineRenderer.endWidth = lineRendererWidth;
 
             if (bfsLineRenderer != null)
             {
                 LineRenderer bfsLineRendererComponent = bfsLineRenderer.GetComponent<LineRenderer>();
                 if (bfsLineRendererComponent != null)
                 {
-                    bfsLineRendererComponent.startWidth = 10.0f;
-                    bfsLineRendererComponent.endWidth = 10.0f;
+                    bfsLineRendererComponent.startWidth = lineRendererWidth;
+                    bfsLineRendererComponent.endWidth = lineRendererWidth;
                 }
             }
         }

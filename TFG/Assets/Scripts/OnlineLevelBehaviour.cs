@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -50,12 +51,19 @@ public class OnlineLevelBehaviour : MonoBehaviour
     private CameraModeManager cameraModeManager;
     private int currentCameraMode = 0;
 
+    private float lineRendererWidth = 50.0f;
+    public float minWidth = 2f;
+    public float maxWidth = 100f;
+    public float widthChangeSpeed = 2f;
+
     private void Start()
     {
         requestHandler = new Requests();
         waypointStart = Instantiate(waypointPrefab, WaypointStorage.waypointStart, Quaternion.identity);
         waypointEnd = Instantiate(flagPrefab, WaypointStorage.waypointEnd, Quaternion.identity);
         cameraModeManager = GetComponent<CameraModeManager>();
+        lineRenderer.startWidth = lineRendererWidth;
+        lineRenderer.endWidth = lineRendererWidth;
     }
 
     private void UpdateLine()
@@ -313,6 +321,22 @@ public class OnlineLevelBehaviour : MonoBehaviour
             Cursor.visible = true;
         }
 
+        if (Input.GetKeyDown(KeyCode.LeftBracket) && currentCameraMode == 0)
+        {
+            float newWidth = Math.Max(minWidth, lineRenderer.startWidth - widthChangeSpeed);
+            lineRenderer.startWidth = newWidth;
+            lineRenderer.endWidth = newWidth;
+            lineRendererWidth = newWidth;
+        }
+
+        if (Input.GetKeyDown(KeyCode.RightBracket) && currentCameraMode == 0)
+        {
+            float newWidth = Math.Min(maxWidth, lineRenderer.startWidth + widthChangeSpeed);
+            lineRenderer.startWidth = newWidth;
+            lineRenderer.endWidth = newWidth;
+            lineRendererWidth = newWidth;
+        }
+
         if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson && currentCameraMode != 1)
         {
             currentCameraMode = 1;
@@ -322,8 +346,8 @@ public class OnlineLevelBehaviour : MonoBehaviour
         else if (cameraModeManager.currentMode == CameraModeManager.Mode.ThirdPerson && currentCameraMode != 0)
         {
             currentCameraMode = 0;
-            lineRenderer.startWidth = 10.0f;
-            lineRenderer.endWidth = 10.0f;
+            lineRenderer.startWidth = lineRendererWidth;
+            lineRenderer.endWidth = lineRendererWidth;
         }
         else if (cameraModeManager.currentMode == CameraModeManager.Mode.VR && currentCameraMode != 2)
         {
