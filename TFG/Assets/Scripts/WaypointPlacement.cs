@@ -22,6 +22,7 @@ public class WaypointPlacement : MonoBehaviour
 
     public LineRenderer lineRenderer;
     public float minDistance = 0.1f;
+    private float minDistanceFirstVR = 0.1f;
     private List<Vector3> waypoints = new List<Vector3>();
     private bool isDrawing = false;
 
@@ -61,6 +62,7 @@ public class WaypointPlacement : MonoBehaviour
         optimalMetricsView.SetActive(false);
         lineRenderer.startWidth = lineRendererWidth;
         lineRenderer.endWidth = lineRendererWidth;
+        minDistance = terrain.terrainData.heightmapResolution >= 4096 ? 2f : 0.5f;
     }
 
     public void PlaceStart()
@@ -151,7 +153,7 @@ public class WaypointPlacement : MonoBehaviour
                 if (canDraw)
                 {
                     Vector3 currentPos = Camera.main.transform.position;
-                    if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], currentPos) > minDistance)
+                    if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], currentPos) > minDistanceFirstVR)
                     {
                         waypoints.Add(currentPos - new Vector3(0, 0.7f, 0));
                         lineRenderer.positionCount = waypoints.Count;
@@ -163,7 +165,7 @@ public class WaypointPlacement : MonoBehaviour
                 if (canDraw && cameraModeManager.isVREnabled())
                 {
                     Vector3 currentPos = Camera.main.transform.position;
-                    if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], currentPos) > minDistance)
+                    if (waypoints.Count == 0 || Vector3.Distance(waypoints[waypoints.Count - 1], currentPos) > minDistanceFirstVR)
                     {
                         waypoints.Add(currentPos - new Vector3(0, 1.4f, 0));
                         lineRenderer.positionCount = waypoints.Count;

@@ -8863,7 +8863,7 @@ MonoBehaviour:
   finishDrawing: {fileID: 1879865771}
   resetButton: {fileID: 2130904139}
   lineRenderer: {fileID: 2049570463}
-  minDistance: 0.1
+  minDistance: 0.2
   terrain: {fileID: 1082113505}
   saveScore: {fileID: 1779511342}
   metricViewContent: {fileID: 1774198741}
