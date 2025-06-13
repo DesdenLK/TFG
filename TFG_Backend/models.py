@@ -8,6 +8,7 @@ import bcrypt
 
 Base = declarative_base()
 
+# Defineix la taula d'usuaris
 class Users(Base):
     __tablename__ = 'users'
 
@@ -25,11 +26,13 @@ class Users(Base):
     def check_password(self, password):
         return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
 
+# Defineix un enumerat per als tipus de fitxers
 class FileType(PyEnum):
     Texture = "Texture"
     Heightmap = "Heightmap"
     Avalanche = "Avalanche"
 
+# Defineix la taula de fitxers
 class FileStorage(Base):
     __tablename__ = 'file_storage'
 
@@ -41,6 +44,7 @@ class FileStorage(Base):
     file_data = Column(LargeBinary, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
 
+# Defineix la taula de terrenys
 class Terrains(Base):
     __tablename__ = 'terrains'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -56,6 +60,7 @@ class Terrains(Base):
     creator = Column(UUID(as_uuid=True), ForeignKey('users.uuid'), nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
 
+# Defineix la taula de nivells de terreny
 class TerrainLevels(Base):
     __tablename__ = 'terrain_levels'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -79,6 +84,7 @@ class TerrainLevels(Base):
     optimal_total_avalanches = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
 
+# Defineix la taula de puntuacions dels nivells
 class LevelScores(Base):
     __tablename__ = 'level_scores'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -96,6 +102,7 @@ class LevelScores(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.now)
 
 
+# Defineix la taula de punts del camí òptim
 class OptimalPathPoint(Base):
     __tablename__ = 'optimal_path_points'
     id = Column(Integer, primary_key=True, autoincrement=True)

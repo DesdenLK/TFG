@@ -16,7 +16,7 @@ engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 Base.metadata.create_all(engine)
 
-# Dependency to get the database session
+
 def get_db():
     db = Session()
     try:
@@ -85,7 +85,7 @@ class LevelScore(BaseModel):
     metabolic_cost: float
     number_avalanche: int
 
-
+# Defineix la ruta per registrar un usuari
 @app.post("/register-user")
 async def register_user(user: User, db: sqlalchemy.orm.Session = Depends(get_db)):
     existing_user = db.query(Users).filter(Users.name == user.name).first()
@@ -107,6 +107,7 @@ async def register_user(user: User, db: sqlalchemy.orm.Session = Depends(get_db)
     finally:
         db.close()
 
+# Defineix la ruta per iniciar sessió
 @app.post("/login")
 async def login(user: User, db: sqlalchemy.orm.Session = Depends(get_db)):
     db_user = db.query(Users).filter(Users.name == user.name).first()
@@ -115,6 +116,7 @@ async def login(user: User, db: sqlalchemy.orm.Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+# Defineix la ruta per crear un nou terreny
 @app.post("/new-terrain")
 async def new_terrain(terrain: Terrain, db: sqlalchemy.orm.Session = Depends(get_db)):
     from models import Terrains as TerrainModel
@@ -180,6 +182,7 @@ async def new_terrain(terrain: Terrain, db: sqlalchemy.orm.Session = Depends(get
     finally:
         db.close()
 
+# Defineix la ruta per obtenir els terrenys d'un usuari
 @app.get("/terrains/{username}/{onlyPublic}")
 async def get_terrains(username: str, onlyPublic: bool, db: sqlalchemy.orm.Session = Depends(get_db)):
     from models import Terrains as TerrainModel
@@ -216,7 +219,7 @@ async def get_terrains(username: str, onlyPublic: bool, db: sqlalchemy.orm.Sessi
             for terrain in terrains]
     }
 
-
+# Defineix la ruta per descarregar un terreny
 @app.get("/download-terrain/{terrain_uuid}")
 async def download_terrain(terrain_uuid: str, db: sqlalchemy.orm.Session = Depends(get_db)):
     from models import Terrains as TerrainModel
@@ -258,7 +261,7 @@ async def download_terrain(terrain_uuid: str, db: sqlalchemy.orm.Session = Depen
             "avalancheFileBytes": avalanche_file.file_data if avalanche_file else None,
         }
     }
-
+# Defineix la ruta per crear un nivell de terreny
 @app.post("/create-level/{terrain_uuid}")
 async def create_level(terrain_uuid: str, level: TerrainLevel, db: sqlalchemy.orm.Session = Depends(get_db)):
     from models import TerrainLevels as TerrainLevelModel
@@ -320,6 +323,7 @@ async def create_level(terrain_uuid: str, level: TerrainLevel, db: sqlalchemy.or
     finally:
         db.close()
 
+# Defineix la ruta per obtenir els nivells d'un terreny
 @app.get("/levels/{terrain_uuid}")
 async def get_levels(terrain_uuid: str, db: sqlalchemy.orm.Session = Depends(get_db)):
     from models import TerrainLevels as TerrainLevelModel
@@ -359,6 +363,7 @@ async def get_levels(terrain_uuid: str, db: sqlalchemy.orm.Session = Depends(get
             for level in levels]
     }
 
+# Defineix la ruta per enviar la puntuació d'un nivell
 @app.post("/submit-level-score")
 async def submit_level_score(score: LevelScore, db: sqlalchemy.orm.Session = Depends(get_db)):
     from models import LevelScores as LevelScoreModel
@@ -392,6 +397,7 @@ async def submit_level_score(score: LevelScore, db: sqlalchemy.orm.Session = Dep
     finally:
         db.close()
 
+# Defineix la ruta per obtenir les puntuacions d'un nivell
 @app.get("/level-scores/{level_uuid}")
 async def get_level_scores(level_uuid: str, db: sqlalchemy.orm.Session = Depends(get_db)):
     from models import LevelScores as LevelScoreModel
