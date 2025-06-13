@@ -49,6 +49,8 @@ public class NewTerrain : MonoBehaviour
     public Transform textureListContent;
     public GameObject textureLabelPrefab;
 
+    public Text responseText;
+
     public Text rawFileText;
     public Text avalancheFileText;
 
@@ -161,10 +163,14 @@ public class NewTerrain : MonoBehaviour
 
         if (response.Contains("ERROR"))
         {
+            responseText.text = "Error creating terrain. Please try again.";
+            responseText.color = Color.red;
             Debug.Log("Error on the request " + response);
         }
         else
         {
+            responseText.text = "Terrain created successfully!";
+            responseText.color = Color.green;
             clearFields();
             creatingTerrain = false;
             Debug.Log("Terrain created successfully: " + response);
