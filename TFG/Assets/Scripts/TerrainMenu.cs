@@ -165,10 +165,6 @@ public class TerrainMenu : MonoBehaviour
 
                 newPanelButton.GetComponentInChildren<Text>().text = terrainList[i].name;
 
-                //Image imageComponent = newPanelButton.GetComponentInChildren<Image>();
-                //Sprite sprite = Sprite.Create(blackTexture, new Rect(0, 0, blackTexture.width, blackTexture.height), new Vector2(0.5f, 0.5f));
-                //imageComponent.sprite = sprite;
-
                 int index = i;
                 newPanelButton.GetComponentInChildren<Button>().onClick.AddListener(() => DownloadTerrainMenu(index));
             }
@@ -177,10 +173,6 @@ public class TerrainMenu : MonoBehaviour
                 GameObject newPanelButton = Instantiate(DownloadedPanel, panelTransform);
 
                 newPanelButton.GetComponentInChildren<Text>().text = terrainList[i].name;
-
-                //Image imageComponent = newPanelButton.GetComponentInChildren<Image>();
-                //Sprite sprite = Sprite.Create(colorTexture, new Rect(0, 0, colorTexture.width, colorTexture.height), new Vector2(0.5f, 0.5f));
-                //imageComponent.sprite = sprite;
 
                 int index = i;
                 newPanelButton.transform.Find("Play").GetComponent<Button>().onClick.AddListener(() => LoadTerrainOrLevels(index));

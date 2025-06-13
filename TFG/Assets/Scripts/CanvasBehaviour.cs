@@ -11,6 +11,7 @@ public class CanvasBehaviour : MonoBehaviour
         canvas = gameObject;
     }
 
+    // Activa o desactiva la visibilitat del canvas
     public void toggleCanvasVisibility()
     {
         canvas.SetActive(!canvas.activeSelf);

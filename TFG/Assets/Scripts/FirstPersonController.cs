@@ -25,6 +25,7 @@ public class FirstPersonController : MonoBehaviour
 
     void Update()
     {
+        // Comprovar si hi ha algun element de la UI seleccionat
         if (EventSystem.current != null &&
             EventSystem.current.currentSelectedGameObject != null &&
             (
@@ -42,24 +43,24 @@ public class FirstPersonController : MonoBehaviour
             velocity = Vector3.zero;
         }
 
-        // Comprobar si el jugador está en el suelo
+        // Comprovar si el jugador està a terra
         isGrounded = Physics.CheckSphere(transform.position, groundCheckDistance, groundMask);
         if (isGrounded && velocity.y < 0)
         {
             velocity.y = -2f;
         }
 
-        // Movimiento del jugador
+        // Moviment del jugador amb les tecles WASD
         float moveX = Input.GetAxis("Horizontal");
         float moveZ = Input.GetAxis("Vertical");
         Vector3 move = transform.right * moveX + transform.forward * moveZ;
         controller.Move(move * speed * Time.deltaTime);
 
-        // Aplicar gravedad
+        // Aplicar la gravetat
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
 
-        // Solo rotar si botón derecho
+        // Rota la càmera amb el botó dret del ratolí
         if (Input.GetMouseButton(1))
         {
             Cursor.lockState = CursorLockMode.Locked;
@@ -69,9 +70,9 @@ public class FirstPersonController : MonoBehaviour
             transform.Rotate(Vector3.up * mouseX);
 
             float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
-            verticalLookRotation -= mouseY;
-            verticalLookRotation = Mathf.Clamp(verticalLookRotation, -90f, 90f);
-            cam.localRotation = Quaternion.Euler(verticalLookRotation, 0, 0);
+            verticalLookRotation -= mouseY; // Invertir la rotació vertical per a una experiència més natural
+            verticalLookRotation = Mathf.Clamp(verticalLookRotation, -90f, 90f); // Limitar la rotació vertical per evitar voltes completes
+            cam.localRotation = Quaternion.Euler(verticalLookRotation, 0, 0); 
         }
         else
         {

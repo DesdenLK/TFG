@@ -19,6 +19,7 @@ public class MinimapIcons : MonoBehaviour
 
     void Start()
     {
+        // Obtenir el jugador en funció del mode de càmera actual
         if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson)
         {
             player = firstPersonPlayer;
@@ -65,14 +66,14 @@ public class MinimapIcons : MonoBehaviour
 
     void UpdateIconPosition(Vector3 worldTarget, RectTransform icon)
     {
-        // Convertir posición del mundo a viewport (0–1)
+        // Convertir la posició del món a la posició de la càmera del minimapa
         Vector3 viewportPos = minimapCamera.WorldToViewportPoint(worldTarget);
 
-        // Limitar valores para que los íconos no se salgan del minimapa
+        // Limitar la posició a l'interval [0, 1] per evitar que les icones se surtin del minimapa
         viewportPos.x = Mathf.Clamp01(viewportPos.x);
         viewportPos.y = Mathf.Clamp01(viewportPos.y);
 
-        // Convertir a posición dentro del minimapRect
+        // Convertir la posició de la vista a la posició local del minimapa
         Vector2 minimapSize = minimapRect.rect.size;
         Vector2 localPos = new Vector2(
             (viewportPos.x - 0.5f) * minimapSize.x,
@@ -81,7 +82,7 @@ public class MinimapIcons : MonoBehaviour
 
         icon.anchoredPosition = localPos;
 
-        // Rotar el ícono del jugador para que apunte en su dirección
+        // En cas que l'icona sigui la del jugador, ajustar la rotació per a que apunti en la direcció correcta
         if (icon == playerIcon)
         {
             float yaw = player.eulerAngles.y;

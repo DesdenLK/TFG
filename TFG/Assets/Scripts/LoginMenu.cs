@@ -61,7 +61,7 @@ public class LoginMenu : MonoBehaviour
             responseText.text = "Invalid username or password.";
             responseText.color = Color.red;
         }
-        else if (response.Contains("ERROR: 500"))
+        else if (response.Contains("ERROR: 500") || !response.Contains("message"))
         {
             responseText.text = "Server error. Please try again later.";
             responseText.color = Color.red;
@@ -108,7 +108,7 @@ public class LoginMenu : MonoBehaviour
             responseText.text = "User already registered.";
             responseText.color = Color.red;
         }
-        else if (response.Contains("ERROR: 500"))
+        else if (response.Contains("ERROR: 500") || !response.Contains("message"))
         {
             responseText.text = "Server error. Please try again later.";
             responseText.color = Color.red;

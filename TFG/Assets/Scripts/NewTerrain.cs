@@ -61,6 +61,7 @@ public class NewTerrain : MonoBehaviour
 
     private bool creatingTerrain = false;
 
+    // Afegeix un fitxer de textura a la llista de textures
     public void AddTextureFileToList(TextureFile textureFile)
     {
         GameObject item = Instantiate(textureLabelPrefab, textureListContent);
@@ -193,10 +194,8 @@ public class NewTerrain : MonoBehaviour
     }
     public void OpenFileExplorerRaw()
     {
-        // Filtro opcional (ej: solo imágenes)
         var extensions = new[] {
             new ExtensionFilter("Raw Files", "raw"),
-            //new ExtensionFilter("All Files", "*"),
         };
 
         string[] paths = StandaloneFileBrowser.OpenFilePanel("Select File", "", extensions, false);

@@ -24,7 +24,7 @@ public class WorldSpaceCanvasController : MonoBehaviour
 
         if (currentCam == vrCam)
         {
-            // Modo World Space para VR
+            // Canvia el mode del canvas a World Space per VR, per que es vegí correctament en VR
             if (canvas.renderMode != RenderMode.WorldSpace)
             {
                 canvas.renderMode = RenderMode.WorldSpace;
@@ -38,17 +38,12 @@ public class WorldSpaceCanvasController : MonoBehaviour
         }
         else
         {
-            // Modo Screen Space Overlay para 1a o 3a persona
             if (canvas.renderMode != RenderMode.ScreenSpaceOverlay)
             {
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 canvas.transform.localScale = Vector3.one;
                 canvas.worldCamera = null;
             }
-
-            // Opcional: resetear posición y rotación si quieres
-            // transform.position = Vector3.zero;
-            // transform.rotation = Quaternion.identity;
         }
     }
 

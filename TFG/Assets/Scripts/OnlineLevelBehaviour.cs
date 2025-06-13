@@ -69,6 +69,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
         minDistance = terrain.terrainData.heightmapResolution >= 4096 ? 2f : 0.5f;
     }
 
+    // Actualitza la linea de camí en funció del mode de càmera actual
     private void UpdateLine()
     {
         if (!startAddedLine)
@@ -134,6 +135,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
         }
     }
 
+    // Actualitza l'estat del botó de dibuix
     public void updateToggleInput()
     {
         canDraw = !canDraw;
@@ -150,6 +152,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
         }
     }
 
+    // Guarda la puntuació del jugador
     public void onSaveScore()
     {
         buttonPanel.SetActive(false);
@@ -170,8 +173,10 @@ public class OnlineLevelBehaviour : MonoBehaviour
         StartCoroutine(requestHandler.PostRequest("/submit-level-score", json, OnScoreResponse));
     }
 
+    // Calcula la puntuació basada en el cost metabòlic de l'usuari i el cost òptim
     private int computeScore(float userCost, float optimalCost)
     {
+        // Si el cost de l'usuari és menor o igual al cost òptim, es calcula un bonus
         if (userCost <= optimalCost)
         {
             float bonus = 10f * (1f - (userCost / optimalCost));
@@ -179,11 +184,13 @@ public class OnlineLevelBehaviour : MonoBehaviour
             return (int)score;
         }
 
-        float deviation = userCost - optimalCost;
-        float scale = optimalCost * 1f;
-        return (int)(100f / (1f + deviation / scale));
+        // Si el cost de l'usuari és major que el cost òptim, es calcula una penalització
+        float deviation = userCost - optimalCost; // Desviació del cost de l'usuari respecte al cost òptim
+        float scale = optimalCost * 1f; // Escala per normalitzar la puntuació
+        return (int)(100f / (1f + deviation / scale)); // Retorna la puntuació ajustada
     }
 
+    // Gestor de la resposta del servidor després de guardar la puntuació
     private void OnScoreResponse(string json)
     {
         if (json.Contains("ERROR"))
@@ -306,6 +313,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
 
     void Update()
     {
+        // Gestió de la entrada del teclat per canviar el mode de càmera
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             cameraModeManager.SwitchMode(CameraModeManager.Mode.ThirdPerson, Vector3.zero);
@@ -325,6 +333,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
             Cursor.visible = true;
         }
 
+        // Gestió de la entrada del teclat per canviar l'amplada de la línia
         if (Input.GetKeyDown(KeyCode.LeftBracket) && currentCameraMode == 0)
         {
             float newWidth = Math.Max(minWidth, lineRenderer.startWidth - widthChangeSpeed);
@@ -341,6 +350,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
             lineRendererWidth = newWidth;
         }
 
+        // Canvia la mida de la linea segons el mode de càmera actual
         if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson && currentCameraMode != 1)
         {
             currentCameraMode = 1;
@@ -361,7 +371,7 @@ public class OnlineLevelBehaviour : MonoBehaviour
         }
 
 
-
+        // Gestiona la actualització de la línia de camí
         if (waypointEnd != null && waypointStart != null)
         {
             if (!canDraw && waypoints.Count > 0 && Vector3.Distance(waypointEnd.transform.position, waypoints[waypoints.Count - 1]) < 200) finishDrawing.interactable = true;

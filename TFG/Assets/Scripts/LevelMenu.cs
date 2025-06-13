@@ -73,6 +73,7 @@ public class LevelMenu : MonoBehaviour
 
     private List<LeaderboardGet> leadearboardList;
 
+    // Obté els nivells només s'inicia l'aplicació.
     void Start()
     {
         requestHandler = new Requests();
@@ -81,6 +82,7 @@ public class LevelMenu : MonoBehaviour
 
     }
 
+    // Crea la llista de nivells a partir de la resposta del servidor.
     private void OnGetLevels(string json)
     {
         LevelResponse levelResponse = JsonConvert.DeserializeObject<LevelResponse>(json);
@@ -124,6 +126,7 @@ public class LevelMenu : MonoBehaviour
         leaderboardPanel.SetActive(true);
     }
 
+    // Obté la llista de puntuacions del nivell seleccionat.
     private void OnGetLeaderboard(string json)
     {
         LeaderboardResponse leaderboardResponse = JsonConvert.DeserializeObject<LeaderboardResponse>(json);
@@ -207,6 +210,7 @@ public class LevelMenu : MonoBehaviour
         createScoreList(sortedList);
     }
 
+    // Crea la llista de puntuacions a partir de les puntuacions obtingudes del servidor
     private void createScoreList(List<LeaderboardGet> scoreList)
     {
         foreach (LeaderboardGet score in scoreList)

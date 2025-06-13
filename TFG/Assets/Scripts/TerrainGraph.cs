@@ -15,6 +15,7 @@ public class TerrainGraph
     public float[,] Heightmap => heightmap;
     public int HeightDifference => heightDifference;
 
+    // Classe per representar la informació del terreny
     public TerrainGraph(Terrain terrain, TerrainLoader terrainLoader)
     {
         TerrainData terrainData = terrain.terrainData;

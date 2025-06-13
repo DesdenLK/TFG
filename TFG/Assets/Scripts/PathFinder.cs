@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Threading;
 using UnityEngine.Rendering;
 
+// Classe per calcular camins òptims en un terreny utilitzant un graf de terreny
 public class PathFinder
 {
     private TerrainGraph terrainGraph;
@@ -18,6 +19,7 @@ public class PathFinder
         this.terrainGraph = new TerrainGraph(terrain, terrainLoader);
     }
 
+    // Converteix una posició del món a coordenades de la graella
     public Vector2Int WorldToGrid(Vector3 worldPos)
     {
         Vector3 localPos = worldPos - terrain.GetPosition();
@@ -27,6 +29,7 @@ public class PathFinder
         return point;
     }
 
+    // Converteix coordenades de la graella a una posició del món
     public Vector3 GridToWorld(Vector2Int gridPos)
     {
         float x = (gridPos.x) * terrainGraph.MetersPerCell;
@@ -36,16 +39,19 @@ public class PathFinder
         return point;
     }
 
+    // Troba un camí entre dos punts utilitzant l'algorisme A* de manera asíncrona
     public async UniTask<Dictionary<Vector2Int, Vector2Int>> FindPathThreadedAsync(Vector2Int start, Vector2Int end, CancellationToken token = default)
     {
         return await UniTask.RunOnThreadPool(() =>
         {
-
+            // Mapa de alçada del terreny
             float[,] heightmap = terrainGraph.Heightmap;
 
+            // Cua de prioritats per a l'algorisme A* i estructures de dades per emmagatzemar el camí
             SimplePriorityQueue<Vector2Int> queue = new SimplePriorityQueue<Vector2Int>();
             Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
 
+            // Inicialització de la estructura de dades per al cost acumulat i la cua de prioritats
             int estimatedNodes = terrainGraph.Width * terrainGraph.Height;
             float[,] costSoFar = new float[terrainGraph.Height, terrainGraph.Width];
             for (int i = 0; i < terrainGraph.Height; i++)
@@ -56,15 +62,18 @@ public class PathFinder
                 }
             }
 
+            // Afegim a la cua el punt d'inici amb un cost de 0
             queue.Enqueue(start, 0);
             cameFrom[start] = new Vector2Int(-1, -1);
             costSoFar[start.y, start.x] = 0;
 
+            // Bucle principal de l'algorisme A*
             while (queue.Count > 0)
             {
                 token.ThrowIfCancellationRequested();
                 Vector2Int current = queue.Dequeue();
 
+                // Si hem arribat al punt final, retornem el camí
                 if (Vector2Int.Distance(current, end) <= 1.0f)
                 {
                     cameFrom[end] = current;
@@ -73,7 +82,7 @@ public class PathFinder
                     return cameFrom;
                 }
 
-                // Explorar vecinos secuencialmente para evitar problemas de token
+                // Exploreu els veïns del punt actual
                 ExploreNeighborAsync(current, current + Vector2Int.up, heightmap, queue, costSoFar, cameFrom, end);
                 ExploreNeighborAsync(current, current + Vector2Int.down, heightmap, queue, costSoFar, cameFrom, end);
                 ExploreNeighborAsync(current, current + Vector2Int.left, heightmap, queue, costSoFar, cameFrom, end);
@@ -91,25 +100,29 @@ public class PathFinder
         }, cancellationToken: token);
     }
 
+    // Explora un veí del punt actual i actualitza la cua de prioritats si es troba un camí millor
     private void ExploreNeighborAsync(Vector2Int current, Vector2Int neighbor,
                            float[,] heightmap,
                            SimplePriorityQueue<Vector2Int> queue,
                           float[,] costSoFar,
                            Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int end)
     {
+        // Comprova si el veí és vàlid i dins dels límits del graf de terreny
         if (!terrainGraph.isCellValid(neighbor)) return;
 
+        // Si el veí ja ha estat visitat, no cal continuar
         float currentCost = costSoFar[current.y, current.x];
         float stepCost = CalculateCostFromHeightmapOptimized(current, neighbor, heightmap);
         float newCost = currentCost + stepCost;
-   
 
+
+        // Si el cost acumulat és més alt que el cost actual del veí, no cal continuar
         if (newCost < costSoFar[neighbor.y, neighbor.x])
         {
             costSoFar[neighbor.y, neighbor.x] = newCost;
             cameFrom[neighbor] = current;
 
-
+            // Calcula la prioritat per a la cua de prioritats
             float heuristic = Vector2Int.Distance(neighbor, end);
             float priority = newCost + heuristic;
 
@@ -124,6 +137,7 @@ public class PathFinder
         }
     }
 
+    // Funció de cost pel camí
     private float CalculateCostFromHeightmapOptimized(Vector2Int from, Vector2Int to, float[,] heightmap)
     {
         float height1 = heightmap[from.y, from.x] * terrainGraph.HeightDifference;
@@ -136,6 +150,7 @@ public class PathFinder
 
     }
 
+    // Converteix un camí trobat per l'algorisme BFS en una llista de punts del món
     public List<Vector3> ConvertBFSPathToPoints(Dictionary<Vector2Int, Vector2Int> bfsPath, Vector2Int start, Vector2Int end)
     {
         Debug.Log("Converting BFS path to points" + bfsPath.Count);

@@ -41,6 +41,7 @@ public class TerrainLoader : MonoBehaviour
         loadTerrain();
     }
 
+    // Carrega el terreny seleccionat des de PlayerPrefs
     public void loadTerrain()
     {
         string selectedTerrain = PlayerPrefs.GetString("SelectedTerrain");
@@ -61,12 +62,12 @@ public class TerrainLoader : MonoBehaviour
                     FlipAvalancheValuesVertically(ref avalancheValues, terrainInfo.widthmapResolution, terrainInfo.heightmapResolution);
                     PlayerPrefs.SetInt("hasAvalancheFile", 1);
 
-                    Texture2D avalancheTexture = GenerateAvalancheTerrainTexture(avalancheValues, terrainInfo.widthmapResolution, terrainInfo.heightmapResolution);
+                    //Texture2D avalancheTexture = GenerateAvalancheTerrainTexture(avalancheValues, terrainInfo.widthmapResolution, terrainInfo.heightmapResolution);
 
-                    avalancheLayer = new TerrainLayer();
-                    avalancheLayer.diffuseTexture = avalancheTexture;
-                    avalancheLayer.smoothnessSource = TerrainLayerSmoothnessSource.Constant;
-                    avalancheLayer.tileSize = new Vector2(terrainInfo.widthmapResolution * terrainInfo.size.x - 1, terrainInfo.heightmapResolution * terrainInfo.size.z);
+                    //avalancheLayer = new TerrainLayer();
+                    //avalancheLayer.diffuseTexture = avalancheTexture;
+                    //avalancheLayer.smoothnessSource = TerrainLayerSmoothnessSource.Constant;
+                    //avalancheLayer.tileSize = new Vector2(terrainInfo.widthmapResolution * terrainInfo.size.x - 1, terrainInfo.heightmapResolution * terrainInfo.size.z);
                 }
                 else PlayerPrefs.SetInt("hasAvalancheFile", 0);
                 //FlipAvalancheValuesHorizontally(ref avalancheValues, terrainInfo.widthmapResolution, terrainInfo.heightmapResolution);
@@ -76,7 +77,7 @@ public class TerrainLoader : MonoBehaviour
         }
     }
 
-
+    // Carrega la informació del terreny des d'un fitxer JSON
     TerrainInfo LoadTerrainInfo(string path)
     {
         string infoPath = Path.Combine(path, "info.json");
@@ -92,6 +93,7 @@ public class TerrainLoader : MonoBehaviour
         }
     }
 
+    // Carrega el heightMap des d'un fitxer RAW de 16 bits
     float[,] LoadRaw16(string path, int width, int height)
     {
         byte[] rawData = File.ReadAllBytes(path);
@@ -116,18 +118,18 @@ public class TerrainLoader : MonoBehaviour
         return heightMap;
     }
 
-    // Función para voltear verticalmente el heightMap
+    // Fa un flip vertical del heightMap
     void FlipHeightMapVertically(ref float[,] heightMap)
     {
         int width = heightMap.GetLength(1);
         int height = heightMap.GetLength(0);
 
-        // Voltear las filas del heightMap
+        // Fa un flip vertical del heightMap
         for (int y = 0; y < height / 2; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                // Intercambiar las filas
+                // Intercanvia els valors de la fila y amb la fila height - y - 1
                 float temp = heightMap[y, x];
                 heightMap[y, x] = heightMap[height - y - 1, x];
                 heightMap[height - y - 1, x] = temp;
@@ -135,6 +137,7 @@ public class TerrainLoader : MonoBehaviour
         }
     }
 
+    // Aplica el heightMap al terreny
     void ApplyHeightMapToTerrain(float[,] heightMap)
     {
         int width = heightMap.GetLength(1);
@@ -152,6 +155,7 @@ public class TerrainLoader : MonoBehaviour
         terrainData.SetHeights(0, 0, heightMap);
     }
 
+    // Afegeix les capes de terreny al terreny
     private void addTerrainLayers(string path, TerrainInfo tInfo)
     {
         List<TerrainLayer> validTerrainLayers = new List<TerrainLayer>();
@@ -172,12 +176,12 @@ public class TerrainLoader : MonoBehaviour
                 textureOptions.Add(tInfo.textureFiles[i]);
             }
         }
-        if (avalancheLayer != null)
-        {
-            Debug.Log("Adding avalanche layer to terrain layers");
-            validTerrainLayers.Add(avalancheLayer);
-            textureOptions.Add("Avalanche Map");
-        }
+        //if (avalancheLayer != null)
+        //{
+        //    Debug.Log("Adding avalanche layer to terrain layers");
+        //    validTerrainLayers.Add(avalancheLayer);
+        //    textureOptions.Add("Avalanche Map");
+        //}
 
         terrainLayers = validTerrainLayers.ToArray();
         dropdown.AddOptions(textureOptions);
@@ -192,6 +196,7 @@ public class TerrainLoader : MonoBehaviour
         }
     }
 
+    // Carrega el mapa d'allaus des d'un fitxer
     int[] LoadAvalancheMap(string path, int width, int height)
     {
         if (!File.Exists(path))
@@ -221,6 +226,7 @@ public class TerrainLoader : MonoBehaviour
         return avalancheMap;
     }
 
+    // Fa un flip vertical dels valors d'allaus
     void FlipAvalancheValuesVertically(ref int[] avalancheValues, int width, int height)
     {
         for (int y = 0; y < height / 2; y++)
@@ -254,32 +260,32 @@ public class TerrainLoader : MonoBehaviour
 
         avalancheValues = flipped;
     }
-    public Texture2D GenerateAvalancheTerrainTexture(int[] values, int width, int height)
-    {
-        Texture2D texture = new Texture2D(width, height, TextureFormat.RGB24, false);
-        texture.filterMode = FilterMode.Point;
+    //public Texture2D GenerateAvalancheTerrainTexture(int[] values, int width, int height)
+    //{
+    //    Texture2D texture = new Texture2D(width, height, TextureFormat.RGB24, false);
+    //    texture.filterMode = FilterMode.Point;
 
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                int index = y * width + x;
-                int val = values[index];
+    //    for (int y = 0; y < height; y++)
+    //    {
+    //        for (int x = 0; x < width; x++)
+    //        {
+    //            int index = y * width + x;
+    //            int val = values[index];
 
-                float normalized = Mathf.Clamp01(val);
-                Color color = Color.Lerp(Color.green, Color.red, normalized);
+    //            float normalized = Mathf.Clamp01(val);
+    //            Color color = Color.Lerp(Color.green, Color.red, normalized);
 
-                texture.SetPixel(x, y, color);
-            }
-        }
+    //            texture.SetPixel(x, y, color);
+    //        }
+    //    }
 
-        texture.Apply();
-        return texture;
-    }
-
-
+    //    texture.Apply();
+    //    return texture;
+    //}
 
 
+
+    // Carrega una textura des d'un fitxer
     Texture2D LoadTextureFromFile(string path, int width, int height)
     {
         if (File.Exists(path))
@@ -314,6 +320,7 @@ public class TerrainLoader : MonoBehaviour
         }
     }
 
+    // Assigna una capa de terreny al terreny actual
     public void assignLayerToTerrain(int index)
     {
         if (terrain != null)

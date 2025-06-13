@@ -11,6 +11,7 @@ using System;
 using System.IO;
 
 
+// Classe per representar un punt
 [System.Serializable]
 public class Vector3Data
 {
@@ -26,6 +27,7 @@ public class Vector3Data
     }
 }
 
+// Classe per representar una petició de nivell
 [System.Serializable]
 public class LevelRequest
 {
@@ -48,6 +50,7 @@ public class LevelRequest
     public int optimal_total_avalanches;
 }
 
+// Classe per crear un nivell
 public class CreateLevel : MonoBehaviour
 {
     public GameObject waypointPrefab;
@@ -88,6 +91,7 @@ public class CreateLevel : MonoBehaviour
         requestHandler = new Requests();
     }
 
+    // Funció per collocar el punt d'inici
     public void PlaceStart()
     {
         isPlacingStart = true;
@@ -96,6 +100,7 @@ public class CreateLevel : MonoBehaviour
         placeEndButton.interactable = true;
     }
 
+    // Funció per col·locar el punt final
     public void PlaceEnd()
     {
         isPlacingEnd = true;
@@ -103,10 +108,13 @@ public class CreateLevel : MonoBehaviour
         placeStartButton.interactable = true;
         placeEndButton.interactable = false;
     }
+
+    // Funció per iniciar el càlcul del camí òptim
     async UniTaskVoid RunBFSPathFIndingAsync()
     {
         if (waypointStart == null || waypointEnd == null || computedBFS) return;
 
+        // Cancela anteriors execucions del camí òptim si hi ha
         bfsCancellationTokenSource?.Cancel();
         bfsCancellationTokenSource?.Dispose();
         bfsCancellationTokenSource = new CancellationTokenSource();
@@ -126,7 +134,7 @@ public class CreateLevel : MonoBehaviour
             stopwatch.Start();
             Dictionary<Vector2Int, Vector2Int> bfsPathDict = await pathFinder.FindPathThreadedAsync(startGrid, endGrid, bfsCancellationTokenSource.Token);
             bfsPath = pathFinder.ConvertBFSPathToPoints(bfsPathDict, startGrid, endGrid);
-            Debug.Log("BFS PATH COST: " + MetricsCalculation.getMetabolicPathCostFromArray(bfsPath));
+            //Debug.Log("BFS PATH COST: " + MetricsCalculation.getMetabolicPathCostFromArray(bfsPath));
             stopwatch.Stop();
             Debug.Log($"BFS pathfinding completed in {stopwatch.ElapsedMilliseconds} ms");
 
@@ -151,6 +159,7 @@ public class CreateLevel : MonoBehaviour
         }
     }
 
+    // Actualiza els punts d'inici i final quan es fa clic
     private void UpdatePoints()
     {
         if ((isPlacingStart || isPlacingEnd) && Input.GetMouseButtonDown(0))
@@ -186,6 +195,7 @@ public class CreateLevel : MonoBehaviour
         }
     }
 
+    // Funció per crear el nivell
     public void onCreateLevelClick()
     {
         creatingLevel = true;
@@ -200,6 +210,7 @@ public class CreateLevel : MonoBehaviour
     }
 
 
+    // Envia la petició per crear el nivell
     private void sendNewLevelPost()
     {
         sendPost = true;

@@ -65,6 +65,7 @@ public class WaypointPlacement : MonoBehaviour
         minDistance = terrain.terrainData.heightmapResolution >= 4096 ? 2f : 0.5f;
     }
 
+    // Funció per col·locar el punt d'inici
     public void PlaceStart()
     {
         WaypointStorage.waypointStart = Vector3.negativeInfinity;
@@ -80,6 +81,7 @@ public class WaypointPlacement : MonoBehaviour
         resetOptimalMetricsView();
     }
 
+    // Funció per col·locar el punt final
     public void PlaceEnd()
     {
         WaypointStorage.waypointEnd = Vector3.negativeInfinity;
@@ -96,6 +98,7 @@ public class WaypointPlacement : MonoBehaviour
         resetOptimalMetricsView();
     }
 
+    // Funció per actualitzar els punts d'inici i final
     private void UpdatePoints()
     {
         if ((isPlacingStart || isPlacingEnd) && Input.GetMouseButtonDown(0))
@@ -137,6 +140,7 @@ public class WaypointPlacement : MonoBehaviour
         }
     }
 
+    // Funció per actualitzar la línia de camí
     private void UpdateLine()
     {
         if (!startAddedLine)
@@ -202,6 +206,7 @@ public class WaypointPlacement : MonoBehaviour
         }
     }
 
+    // Funció per canviar l'estat del botó de pintar
     public void updateToggleInput()
     {
         canDraw = !canDraw;
@@ -304,6 +309,7 @@ public class WaypointPlacement : MonoBehaviour
         startAddedLine = false;
     }
 
+    // Dibuixa el camí òptim en l'escena
     private void DrawBFSPath(List<Vector3> bfsPath)
     {
         bfsLineRenderer = new GameObject("BFSPathLine");
@@ -331,6 +337,7 @@ public class WaypointPlacement : MonoBehaviour
         bfsCancellationTokenSource?.Dispose();
     }
 
+    // Inicia el càlcul del camí òptim utilitzant l'algorisme A* de manera asíncrona
     async UniTaskVoid RunBFSPathFIndingAsync()
     {
         if (waypointStart == null || waypointEnd == null || computedBFS) return;
@@ -394,6 +401,7 @@ public class WaypointPlacement : MonoBehaviour
 
     void Update()
     {
+        // Gestiona el canvi de modes de càmera
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             cameraModeManager.SwitchMode(CameraModeManager.Mode.ThirdPerson, Vector3.zero);
@@ -413,6 +421,7 @@ public class WaypointPlacement : MonoBehaviour
             Cursor.visible = true;
         }
 
+        // Gestiona el canvi d'amplada de la línia
         if (Input.GetKeyDown(KeyCode.LeftBracket) && currentCameraMode == 0)
         {
             float newWidth = Math.Max(minWidth, lineRenderer.startWidth - widthChangeSpeed);
@@ -449,6 +458,7 @@ public class WaypointPlacement : MonoBehaviour
             lineRendererWidth = newWidth;
         }
 
+        // Gestiona l'amplada de la línia i altres aspectes segons el mode de càmera
         if (cameraModeManager.currentMode == CameraModeManager.Mode.FirstPerson && currentCameraMode != 1)
         {
             currentCameraMode = 1;
@@ -504,7 +514,7 @@ public class WaypointPlacement : MonoBehaviour
                 }
             }
         }
-
+        // Logica per gestionar els punts, el camí, l'òptim
         if (executingBFS)
         {
             placeStartButton.interactable = false;

@@ -5,6 +5,8 @@ using UnityEngine.Networking;
 public class Requests
 {
     private string baseUrl = "http://localhost:8000";
+
+    // Funció per fer una petició POST amb un JSON
     public IEnumerator PostRequest(string endpoint, string json, System.Action<string> callback)
     {
 
@@ -30,6 +32,7 @@ public class Requests
         }
     }
 
+    // Funció per fer una petició GET
     public IEnumerator GetRequest(string endpoint, System.Action<string> callback)
     {
         string url = baseUrl + endpoint;
