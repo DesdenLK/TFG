@@ -1,0 +1,74 @@
+{
+    "name": "MiniMapVRInputs",
+    "maps": [
+        {
+            "name": "Minimap",
+            "id": "5bea4ed2-6696-4ca0-9626-15123adbca57",
+            "actions": [
+                {
+                    "name": "Move",
+                    "type": "Value",
+                    "id": "af2b6b38-1418-4ce4-a52e-eb5a77fd3a5b",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ZoomIn",
+                    "type": "Value",
+                    "id": "46d49985-6bd2-40de-b902-2a1ebb0558a3",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ZoomOut",
+                    "type": "Value",
+                    "id": "4e275bdd-6259-42a4-ba57-3aad09e65c9b",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "646bba8b-0ff1-4b16-ba47-19804e8a020a",
+                    "path": "<XRController>{RightHand}/joystick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d8321273-6a1f-4ebf-a986-38eb6a8b03f7",
+                    "path": "<XRController>/grip",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ZoomIn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bd3dc487-8723-4ca1-af3f-9523418e7709",
+                    "path": "<XRController>{RightHand}/trigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ZoomOut",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

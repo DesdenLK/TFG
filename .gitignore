@@ -11,8 +11,11 @@
 [Uu]ser[Ss]ettings/
 
 .env
+venv
+__pycache__
 TFG/Assets/CorePro*
 TFG/Assets/TWD*
+TFG/Assets/StandaloneFileBrowser*
 
 
 PathDrawing/*/*
