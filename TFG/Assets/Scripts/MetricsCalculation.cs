@@ -40,7 +40,7 @@ public class MetricsCalculation : MonoBehaviour
 
     private Metrics metrics = new Metrics();
 
-    // Funció per calcular la distància total del LineRenderer
+    // Funciï¿½ per calcular la distï¿½ncia total del LineRenderer
     void getTotalDistance()
     {
         float totalDistance3D = 0;
@@ -54,7 +54,7 @@ public class MetricsCalculation : MonoBehaviour
         metrics.distance2D = totalDistance2D;
     }
 
-    // Funció per calcular la distància total d'un array de Vector3
+    // Funciï¿½ per calcular la distï¿½ncia total d'un array de Vector3
     public static void getTotalDistanceFromArray(List<Vector3> path, out float totalDistance3D, out float totalDistance2D)
     {
         totalDistance3D = 0;
@@ -66,7 +66,7 @@ public class MetricsCalculation : MonoBehaviour
         }
     }
 
-    // Funció per calcular la pendent total del LineRenderer
+    // Funciï¿½ per calcular la pendent total del LineRenderer
     void getTotalSlope()
     {
         float totalSlope = 0;
@@ -89,7 +89,7 @@ public class MetricsCalculation : MonoBehaviour
         metrics.negativeSlope = negativeSlope;
     }
 
-    // Funció per calcular la pendent total d'un array de Vector3
+    // Funciï¿½ per calcular la pendent total d'un array de Vector3
     public static void getTotalSlopeFromArray(List<Vector3> path, out float totalSlope, out float positiveSlope, out float negativeSlope)
     {
         totalSlope = 0;
@@ -109,7 +109,7 @@ public class MetricsCalculation : MonoBehaviour
         }
     }
 
-    // Funció per calcular el cost metabòlic del camí traçat pel LineRenderer
+    // Funciï¿½ per calcular el cost metabï¿½lic del camï¿½ traï¿½at pel LineRenderer
     void getMetabolicPathCost()
     {
         float metabolicPathCost = 0;
@@ -130,7 +130,7 @@ public class MetricsCalculation : MonoBehaviour
         metrics.metabolicPathCost = metabolicPathCost;
     }
 
-    // Funció per calcular el cost metabòlic d'un camí traçat per un array de Vector3
+    // Funciï¿½ per calcular el cost metabï¿½lic d'un camï¿½ traï¿½at per un array de Vector3
     public static float getMetabolicPathCostFromArray(List<Vector3> path)
     {
         float metabolicPathCost = 0;
@@ -148,7 +148,7 @@ public class MetricsCalculation : MonoBehaviour
         return metabolicPathCost;
     }
 
-    // Funció per calcular el valor acumulat d'allaus del camí traçat per un array de Vector3
+    // Funciï¿½ per calcular el valor acumulat d'allaus del camï¿½ traï¿½at per un array de Vector3
     public int getAccumulateAvalancheValueFromArray(List<Vector3> path)
     {
         int totalAvalancheValue = 0;
@@ -187,7 +187,7 @@ public class MetricsCalculation : MonoBehaviour
         return totalAvalancheValue;
     }
 
-    // Funció estàtica per calcular el valor acumulat d'allaus d'un camí traçat per un array de Vector3
+    // Funciï¿½ estï¿½tica per calcular el valor acumulat d'allaus d'un camï¿½ traï¿½at per un array de Vector3
     public static int getAccumulateAvalancheValueFromArrayStatic(List<Vector3> path, int[] avalancheValues, Vector3 terrainPos, int mapWidth, float metersPerCell)
     {
         int totalAvalancheValue = 0;
@@ -225,7 +225,7 @@ public class MetricsCalculation : MonoBehaviour
         return totalAvalancheValue;
     }
 
-    public int getAccumulatedAvalancheValue() //Funció per lineRenderer, Path que no segueix grid
+    public int getAccumulatedAvalancheValue() //Funciï¿½ per lineRenderer, Path que no segueix grid
     {
         int totalAvalancheValue = 0;
         int mapHeight = avalancheValues.Length / mapWidth;
@@ -268,7 +268,7 @@ public class MetricsCalculation : MonoBehaviour
     }
 
 
-    // Funció estàtica per calcular el cost metabòlic entre dos punts
+    // Funciï¿½ estï¿½tica per calcular el cost metabï¿½lic entre dos punts
     public static float getMetabolicCostBetweenTwoPoints(Vector3 start, Vector3 end)
     {
         Vector2 start2D = new Vector2(start.x, start.z);
@@ -280,7 +280,7 @@ public class MetricsCalculation : MonoBehaviour
         return planarDistance * Mathf.Pow(factor1, 1.2f);
     }
 
-    // Funció per calcular el valor acumulat d'allaus del camí traçat pel LineRenderer
+    // Funciï¿½ per calcular el valor acumulat d'allaus del camï¿½ traï¿½at pel LineRenderer
     public void getAccumulatedAvalancheValueWrapper()
     {
         if (lineRenderer == null || lineRenderer.positionCount == 0 || avalancheValues == null || avalancheValues.Length == 0)
@@ -307,7 +307,7 @@ public class MetricsCalculation : MonoBehaviour
         avalancheCoount.text = metrics.accumulatedAvalancheValue.ToString();
     }
 
-    // Funció estàtica per obtenir totes les mètriques d'un array de Vector3
+    // Funciï¿½ estï¿½tica per obtenir totes les mï¿½triques d'un array de Vector3
     public static Metrics getAllMetricsFromArray(List<Vector3> path)
     {
         Metrics metrics = new Metrics();
