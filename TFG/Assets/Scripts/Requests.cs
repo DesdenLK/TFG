@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 
 public class Requests
 {
-    private string baseUrl = "http://localhost:8000";
+    private string baseUrl = "https://tfg-api-163258525101.europe-west1.run.app";
 
     // Funció per fer una petició POST amb un JSON
     public IEnumerator PostRequest(string endpoint, string json, System.Action<string> callback)

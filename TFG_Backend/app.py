@@ -431,4 +431,4 @@ async def get_level_scores(level_uuid: str, db: sqlalchemy.orm.Session = Depends
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
