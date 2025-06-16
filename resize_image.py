@@ -17,8 +17,8 @@ def crop_and_save_raw(input_path, output_path, crop_left, crop_top, crop_width, 
     print(f"Heightmap retallat i guardat en {output_path} com a arxiu RAW de 16 bits")
 
 # Paràmetres d'entrada
-input_path = r".\TFG\PathDrawing\Tavascan_934-2864\dem_10m.png"  # Ruta de la imatge original
-output_path = r".\TFG\PathDrawing\Tavascan_934-2864\dem_FINAL.raw"  # Ruta per guardar el RAW
+input_path = r"PathDrawing\Tavascan_934-2864\dem_10m.png"  # Ruta de la imatge original
+output_path = r"PathDrawing\Tavascan_934-2864\dem_FINAL.raw"  # Ruta per guardar el RAW
 
 # Definir les dimensions del tall
 crop_left = 0    # Coordenada X d'inici del tall
