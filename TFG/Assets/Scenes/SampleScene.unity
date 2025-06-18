@@ -9971,7 +9971,7 @@ MonoBehaviour:
   resetButton: {fileID: 2130904139}
   optimalMetricsView: {fileID: 781156749}
   lineRenderer: {fileID: 2049570463}
-  minDistance: 1
+  minDistance: 0.1
   minWidth: 2
   maxWidth: 100
   widthChangeSpeed: 2

@@ -62,7 +62,7 @@ public class WaypointPlacement : MonoBehaviour
         optimalMetricsView.SetActive(false);
         lineRenderer.startWidth = lineRendererWidth;
         lineRenderer.endWidth = lineRendererWidth;
-        minDistance = terrain.terrainData.heightmapResolution >= 4096 ? 2f : 0.5f;
+        minDistance = terrain.terrainData.size.x / terrain.terrainData.heightmapResolution;
     }
 
     // Funció per col·locar el punt d'inici
@@ -190,7 +190,7 @@ public class WaypointPlacement : MonoBehaviour
                     RaycastHit hit;
                     if (Physics.Raycast(ray, out hit))
                     {
-                        if (waypoints.Count == 0 || (Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance && Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) < 20))
+                        if (waypoints.Count == 0 || (Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) > minDistance && Vector3.Distance(waypoints[waypoints.Count - 1], hit.point) < 15))
                         {
                             waypoints.Add(hit.point + new Vector3(0, 0.15f,0));
                             lineRenderer.positionCount = waypoints.Count;

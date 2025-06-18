@@ -35,7 +35,7 @@ public class PathFinder
         float x = (gridPos.x) * terrainGraph.MetersPerCell;
         float z = (gridPos.y) * terrainGraph.MetersPerCell;
         float y = terrain.SampleHeight(new Vector3(x + terrain.GetPosition().x, 0, z + terrain.GetPosition().z));
-        Vector3 point = new Vector3(x + terrain.GetPosition().x, y, z + terrain.GetPosition().z);
+        Vector3 point = new Vector3(x + terrain.GetPosition().x, y + 0.2f, z + terrain.GetPosition().z);
         return point;
     }
 
